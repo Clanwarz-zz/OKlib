@@ -22,19 +22,66 @@ function(sinusbot, config) {
 
     engine.notify('OK_lib loaded.');
 
+    /*
+        General
+    */
+    
     event.on('chat', function(ev) {
         if (ev.text == "!info"){
             ev.client.chat("This bot uses the OK_lib, which is a libary for easier script functions.");
         }
     });
-
+    
+    /**
+    * Logs a message to the Instance Log.
+    *
+    * @param {string} message The Log Message.
+    * @param {number} logLevel The Log Level of this Log Message.
+    **/
     function log(message, logLevel){
         if (logLevel >= config.logLevel){
             engine.log(message);
         }
     }
-
-    function groupAdd(client, group){
+    
+    /*
+        Client
+    */
+    
+    /**
+    * Checks if a Client is the Member of all Server Groups.
+    *
+    * @param {Client} client The tested Client as a Client Object.
+    * @param {number[]} checkGroups The Groups that should be checked as an Array of GroupIDs.
+    * @returns {boolean} True if the Client is in all Groups, else False.
+    **/
+    function clientServerGroupsIsMemberOfAll(client, checkGroups){
+        for (var checkGroup in checkGroups){
+            if (!clientIsMemberOf(client, checkGroup)){
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+    * Checks if a Client is the Member of a Server Group.
+    *
+    * @param {Client} client The tested Client as a Client Object.
+    * @param {number} checkGroups The GroupID of the Group that should be checked.
+    * @returns {boolean} True if the Client is Member of the Server Group, else False.
+    **/
+    function clientServerGroupsIsMemberOf(client, checkGroup){
+        var serverGroups = client.getServerGroups();
+        for (var serverGroup in serverGroups){
+            if (serverGroups[serverGroup].id() == checkGroup){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    function group_add(client, group){
         if(group.isArray){
             clientGroups = client.getServerGroups();
             if(group.length > 0){
@@ -59,6 +106,15 @@ function(sinusbot, config) {
 
         }
     }
+    
+    /*
+        Group
+    */
+    
+    
+    /*
+        Lib Definition
+    */
 
     function removeGroups(client){
         var clientGroups = client.getServerGroups();
@@ -128,10 +184,8 @@ function(sinusbot, config) {
         poke: function(bla){
 
         },
-        chat: function(bla){
-
+        group: {
         }
-      }
     };
 
 

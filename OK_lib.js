@@ -20,7 +20,7 @@ function(sinusbot, config) {
     var format = require('format');
     var helper = require('helpers');
 
-    engine.notify('OK_lib successfully loaded.');
+    engine.notify('OK_lib loaded.');
 
     event.on('chat', function(ev) {
         if (ev.text == "!info"){
@@ -61,16 +61,16 @@ function(sinusbot, config) {
     }
 
     function removeGroups(client){
-      var clientGroups = client.getServerGroups();
-      if(afkGroups.length > 0){
-        for(var group in afkGroups){
-          for(var clientGroup in clientGroups){
-            if(afkGroups[group] == clientGroups[clientGroup].id()){
-              client.removeFromServerGroup(clientGroups[clientGroup]);
+        var clientGroups = client.getServerGroups();
+        if(afkGroups.length > 0){
+            for(var group in afkGroups){
+                for(var clientGroup in clientGroups){
+                    if(afkGroups[group] == clientGroups[clientGroup].id()){
+                        client.removeFromServerGroup(clientGroups[clientGroup]);
+                    }
+                }
             }
-          }
         }
-      }
     }
 
     function messageUser(client, i){
@@ -104,14 +104,14 @@ function(sinusbot, config) {
     }
 
     function checkIfIgnore(channel){
-      if(channelIgnore.length > 0){
-        for(var i = 0; i < channelIgnore.length; i++){
-          if(channelIgnore[i].channel == channel.id()){
-            return true;
-          }
+        if(channelIgnore.length > 0){
+            for(var i = 0; i < channelIgnore.length; i++){
+                if(channelIgnore[i].channel == channel.id()){
+                    return true;
+                }
+            }
         }
-      }
-      return false;
+        return false;
     }
 
     var libModul = {

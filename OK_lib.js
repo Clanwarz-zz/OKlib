@@ -25,13 +25,13 @@ function(sinusbot, config) {
     /*
         General
     */
-    
+
     event.on('chat', function(ev) {
         if (ev.text == "!info"){
             ev.client.chat("This bot uses the OK_lib, which is a libary for easier script functions.");
         }
     });
-    
+
     /**
     * Logs a message to the Instance Log.
     *
@@ -43,11 +43,11 @@ function(sinusbot, config) {
             engine.log(message);
         }
     }
-    
+
     /*
         Client
     */
-    
+
     /**
     * Checks if a Client is the Member of all Server Groups.
     *
@@ -57,13 +57,13 @@ function(sinusbot, config) {
     **/
     function clientServerGroupsIsMemberOfAll(client, checkGroups){
         for (var checkGroup in checkGroups){
-            if (!clientIsMemberOf(client, checkGroup)){
+            if (!clientServerGroupsIsMemberOf(client, checkGroup)){
                 return false;
             }
         }
         return true;
     }
-    
+
     /**
     * Checks if a Client is the Member of a Server Group.
     *
@@ -80,7 +80,30 @@ function(sinusbot, config) {
         }
         return false;
     }
-    
+
+    /**
+    * Checks if a Client is the Member of a Server Group.
+    *
+    * @param {Client} client The tested Client as a Client Object.
+    * @param {number[]} checkGroups The Groups that should be checked as an Array of GroupIDs.
+    * @returns {object} Contains two arrays with GroupID's, the first with GroupID's in which the client is and the second in which the client is not.
+    **/
+    function clientServerGroupsIsMemberaAndIsNotMember(client, checkGroup){
+        var isMember = [];
+        var isNotMember = [];
+        var memberAndNotMember = {memberOf: isMember, notMemberOf: isNotMember};
+        var serverGroups = client.getServerGroups();
+        for (var serverGroup in serverGroups){
+            if (clientServerGroupsIsMemberOf(client, serverGroups[serverGroup].id())){
+                isMember.push(serverGroups[serverGroup].id());
+            }
+            else {
+                isNotMember.push(serverGroups[serverGroup].id());
+            }
+        }
+        return memberAndNotMember;
+    }
+
     function group_add(client, group){
         if(group.isArray){
             clientGroups = client.getServerGroups();
@@ -106,12 +129,12 @@ function(sinusbot, config) {
 
         }
     }
-    
+
     /*
         Group
     */
-    
-    
+
+
     /*
         Lib Definition
     */
@@ -171,20 +194,16 @@ function(sinusbot, config) {
     }
 
     var libModul = {
-      groups: {
-        add: group_add,
-        remove: function(aa, bb) {
-          return aa+bb;
-        }
-      },
-      remove: function(aa, bb) {
-        return aa+bb;
-      },
-      chat: {
-        poke: function(bla){
-
+        groups: {
+            add: group_add,
+            remove: function(aa, bb) {
+                return aa+bb;
+            }
         },
-        group: {
+        chat: {
+            poke: function(bla){
+
+            },
         }
     };
 

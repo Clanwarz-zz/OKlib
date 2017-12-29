@@ -39,7 +39,7 @@ function(sinusbot, config) {
     * @param {number} logLevel The Log Level of this Log Message.
     **/
     function log(message, logLevel){
-        if (logLevel >= config.logLevel){
+        if (logLevel <= config.logLevel){
             engine.log(message);
         }
     }
@@ -104,53 +104,70 @@ function(sinusbot, config) {
         return memberAndNotMember;
     }
 
-    function group_add(client, group){
-        if(group.isArray){
-            clientGroups = client.getServerGroups();
-            if(group.length > 0){
-                for(var curGroup in group){
-                    if(clientGroups.map(function(gr){return gr.id();}).indexOf(group[curGroup]) === -1){
-                        groupChecker = null;
-                        groupChecker = backend.getServerGroupByID(group[curGroup]);
-                        if(groupChecker){
-                            client.addToServerGroup(groupChecker);
-                        }
-                        else{
-                            engine.log("Group wasn't added. Reason: Group ID " + group[curGroup] + " was not found on the server");
-                        }
-                    }
-                    else{
-                        engine.log("Group wasn't added. Reason: The client already got the Group ID " + group[curGroup]);
-                    }
-                }
-            }
-        }
-        else {
-
-        }
-    }
 
     /*
         Group
     */
 
-
-    /*
-        Lib Definition
-    */
-
-    function removeGroups(client){
-        var clientGroups = client.getServerGroups();
-        if(afkGroups.length > 0){
-            for(var group in afkGroups){
-                for(var clientGroup in clientGroups){
-                    if(afkGroups[group] == clientGroups[clientGroup].id()){
-                        client.removeFromServerGroup(clientGroups[clientGroup]);
+	function clientServerGroupAddToGroup(client, groups){
+        var groups = createArray(groups);
+        if (groups.length > 0){
+            for (var curGroup in groups){
+                if (!clientServerGroupsIsMemberOf(client, groups[curGroup])){
+                    var groupChecker = backend.getServerGroupByID(groups[curGroup]);
+                    if (groupChecker){
+                        client.addToServerGroup(groupChecker);
                     }
+                    else {
+                        log("Group wasn't added. Reason: Group ID " + groups[curGroup] + " was not found on the server", 5);
+                    }
+                }
+                else {
+                    log("Group wasn't added. Reason: The client already got the Group ID " + groups[curGroup], 10);
                 }
             }
         }
     }
+
+  	function clientServerGroupRemoveFromGroup(client, groups){
+        var groups = createArray(groups);
+        if (groups.length > 0){
+            for (var curGroup in groups){
+                if (clientServerGroupsIsMemberOf(client, groups[curGroup])){
+                  	client.removeFromServerGroup(groups[curGroup]);
+                }
+              	else {
+                    log("Group wasn't removed. Reason: The client does not have the Group ID " + groups[curGroup], 10);
+                }
+            }
+        }
+    }
+
+    /*
+    	Helper
+    */
+
+    function isNumber(number){
+      	if (!isNaN(number)){
+        	return true;
+      	}
+      	return false;
+    }
+
+	function createArray(element){
+      	if (!element.isArray()){
+          	var array = [];
+        	array.push(element);
+          	return array;
+      	}
+      	else{
+          	return element;
+        }
+    }
+
+    /*
+        Lib Definition
+    */
 
     function messageUser(client, i){
         setTimeout(function(){
@@ -193,12 +210,15 @@ function(sinusbot, config) {
         return false;
     }
 
-    var libModul = {
-        groups: {
-            add: group_add,
-            remove: function(aa, bb) {
-                return aa+bb;
+    var libModule = {
+      	client: {
+          	serverGroups: {
+              	isMemberOf: clientServerGroupsIsMemberOf,
+              	isMemberOfAll: clientServerGroupsIsMemberOfAll
             }
+        },
+        serverGroups: {
+
         },
         chat: {
             poke: function(bla){

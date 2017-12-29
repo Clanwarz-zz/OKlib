@@ -34,7 +34,7 @@ function(sinusbot, config) {
         }
     }
 
-    function group_add(client, group){
+    function groupAdd(client, group){
         if(group.isArray){
             clientGroups = client.getServerGroups();
             if(group.length > 0){
@@ -60,7 +60,7 @@ function(sinusbot, config) {
         }
     }
 
-    function remove_groups(client){
+    function removeGroups(client){
       var clientGroups = client.getServerGroups();
       if(afkGroups.length > 0){
         for(var group in afkGroups){
@@ -73,7 +73,7 @@ function(sinusbot, config) {
       }
     }
 
-    function message_user(client, i){
+    function messageUser(client, i){
         setTimeout(function(){
             client.chat(ruleArray[i].rule);
             i++;
@@ -103,7 +103,7 @@ function(sinusbot, config) {
         }, messageDelay);
     }
 
-    function check_if_ignore(channel){
+    function checkIfIgnore(channel){
       if(channelIgnore.length > 0){
         for(var i = 0; i < channelIgnore.length; i++){
           if(channelIgnore[i].channel == channel.id()){

@@ -27,46 +27,51 @@ function(sinusbot, config) {
     });
 
     var libModul = {
-      groups: {
-        add: function(client, group) {
-          if(group.isArray){
-            clientGroups = client.getServerGroups();
-            if(group.length > 0){
-              for(var curGroup in group){
-                if(clientGroups.map(function(gr){return gr.id();}).indexOf(group[curGroup]) === -1){
-                  groupChecker = null;
-                  groupChecker = backend.getServerGroupByID(group[curGroup]);
-                  if(groupChecker){
-                    client.addToServerGroup(groupChecker);
+      ts: {
+        groups: {
+          add: function(client, group) {
+            if(group.isArray){
+              clientGroups = client.getServerGroups();
+              if(group.length > 0){
+                for(var curGroup in group){
+                  if(clientGroups.map(function(gr){return gr.id();}).indexOf(group[curGroup]) === -1){
+                    groupChecker = null;
+                    groupChecker = backend.getServerGroupByID(group[curGroup]);
+                    if(groupChecker){
+                      client.addToServerGroup(groupChecker);
+                    }
+                    else{
+                      engine.log("Group wasn't added. Reason: Group ID " + group[curGroup] + " was not found on the server");
+                    }
                   }
                   else{
-                    engine.log("Group wasn't added. Reason: Group ID " + group[curGroup] + " was not found on the server");
+                    engine.log("Group wasn't added. Reason: The client already got the Group ID " + group[curGroup]);
                   }
-                }
-                else{
-                  engine.log("Group wasn't added. Reason: The client already got the Group ID " + group[curGroup]);
                 }
               }
             }
-          }
-          else {
+            else {
 
+            }
+          },
+          remove: function(aa, bb) {
+            return aa+bb;
           }
         },
-        remove: function(aa, bb) {
-          return aa+bb;
+        chat: {
+          poke: function(bla){
+
+          },
+          chat: function(bla){
+
+          }
         }
+      },
+      discord:{
+        
       }
     };
 
-    var lib2Modul = {
-      addSingle: function(a, b) {
-        return a+b;
-      },
-      addArray: function(aa, bb) {
-        return aa+bb;
-      }
-    };
 
     engine.export(libModule);
 });

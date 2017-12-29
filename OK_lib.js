@@ -56,12 +56,8 @@ function(sinusbot, config) {
     * @returns {boolean} True if the Client is in all Groups, else False.
     **/
     function clientServerGroupsIsMemberOfAll(client, checkGroups){
-        for (var checkGroup in checkGroups){
-            if (!clientServerGroupsIsMemberOf(client, checkGroup)){
-                return false;
-            }
-        }
-        return true;
+        var serverGroups = serverGroupParseIDs(client.getServerGroups());
+        return arrayContainsAll(serverGroups, checkGroups);
     }
 
     /**
@@ -72,13 +68,8 @@ function(sinusbot, config) {
     * @returns {boolean} True if the Client is Member of the Server Group, else False.
     **/
     function clientServerGroupsIsMemberOf(client, checkGroup){
-        var serverGroups = client.getServerGroups();
-        for (var serverGroup in serverGroups){
-            if (serverGroups[serverGroup].id() == checkGroup){
-                return true;
-            }
-        }
-        return false;
+        var serverGroups = serverGroupParseIDs(client.getServerGroups());
+        return arrayContainsElement(serverGroups, checkGroup);
     }
 
     /**
@@ -108,9 +99,21 @@ function(sinusbot, config) {
     /*
         Group
     */
+    
+    function serverGroupParseIDs(serverGroups){
+        serverGroups = arrayCreateArray(serverGroups);
+        if (isNumber(serverGroups[0])){
+            return serverGroups;
+        }
+        var result = [];
+        for (var serverGroup in serverGroups){
+            result.push(serverGroups[serverGroup].id());
+        }
+        return result;
+    }
 
 	function clientServerGroupAddToGroup(client, groups){
-        var groups = createArray(groups);
+        var groups = arrayCreateArray(groups);
         if (groups.length > 0){
             for (var curGroup in groups){
                 if (!clientServerGroupsIsMemberOf(client, groups[curGroup])){
@@ -130,7 +133,7 @@ function(sinusbot, config) {
     }
 
   	function clientServerGroupRemoveFromGroup(client, groups){
-        var groups = createArray(groups);
+        var groups = arrayCreateArray(groups);
         if (groups.length > 0){
             for (var curGroup in groups){
                 if (clientServerGroupsIsMemberOf(client, groups[curGroup])){
@@ -146,6 +149,49 @@ function(sinusbot, config) {
     /*
     	Helper
     */
+    
+    function arrayDifference(array, elements){
+        var result = [];
+        for (var element in elements){
+            if (!arrayContainsElement(array, elements[element])){
+                result.push(elements[element]);
+            }
+        }
+        for (var arrayElement in array){
+            if (!arrayContainsElement(elements, array[arrayElement])){
+                result.push(array[arrayElement]);
+            }
+        }
+        return result;
+    }
+    
+    function arrayMissingElements(array, elements){
+        elements = arrayCreateArray(elements);
+        var result = [];
+        for (var element in elements){
+            if (!arrayContainsElement(array, elements[element])){
+                result.push(elements[element]);
+            }
+        }
+        return result;
+    }
+    
+    function arrayContainsAll(array, elements){
+        if (arrayMissingElements(array, elements).length > 0){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    
+    function arrayContainsElement(array, element){
+        for (var arrayElement in array){
+            if (array[arrayElement] == element){
+                return true;
+            }
+        }
+        return false;
+    }
 
     function isNumber(number){
       	if (!isNaN(number)){
@@ -154,7 +200,7 @@ function(sinusbot, config) {
       	return false;
     }
 
-	function createArray(element){
+	function arrayCreateArray(element){
       	if (!element.isArray()){
           	var array = [];
         	array.push(element);
@@ -211,6 +257,9 @@ function(sinusbot, config) {
     }
 
     var libModule = {
+        general: {
+            log: log
+        },
       	client: {
           	serverGroups: {
               	isMemberOf: clientServerGroupsIsMemberOf,
@@ -224,6 +273,10 @@ function(sinusbot, config) {
             poke: function(bla){
 
             },
+        },
+        helper: {
+            isNumber: isNumber,
+            createArray: createArray
         }
     };
 

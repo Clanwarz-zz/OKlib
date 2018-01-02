@@ -20,6 +20,12 @@ function(sinusbot, config) {
     var format = require('format');
     var helper = require('helpers');
 
+    var ts = false;
+
+    if(engine.getBackend() == "ts3"){
+        ts = true;
+    }
+    
     engine.notify('OK_lib loaded.');
 
     /*
@@ -99,7 +105,7 @@ function(sinusbot, config) {
     /*
         Group
     */
-    
+
     function serverGroupParseIDs(serverGroups){
         serverGroups = arrayCreateArray(serverGroups);
         if (isNumber(serverGroups[0])){
@@ -113,7 +119,7 @@ function(sinusbot, config) {
     }
 
 	function clientServerGroupAddToGroup(client, groups){
-        var groups = arrayCreateArray(groups);
+        groups = arrayCreateArray(groups);
         if (groups.length > 0){
             for (var curGroup in groups){
                 if (!clientServerGroupsIsMemberOf(client, groups[curGroup])){
@@ -133,7 +139,7 @@ function(sinusbot, config) {
     }
 
   	function clientServerGroupRemoveFromGroup(client, groups){
-        var groups = arrayCreateArray(groups);
+        groups = arrayCreateArray(groups);
         if (groups.length > 0){
             for (var curGroup in groups){
                 if (clientServerGroupsIsMemberOf(client, groups[curGroup])){
@@ -149,7 +155,7 @@ function(sinusbot, config) {
     /*
     	Helper
     */
-    
+
     function arrayDifference(array, elements){
         var result = [];
         for (var element in elements){
@@ -164,7 +170,7 @@ function(sinusbot, config) {
         }
         return result;
     }
-    
+
     function arrayMissingElements(array, elements){
         elements = arrayCreateArray(elements);
         var result = [];
@@ -175,7 +181,7 @@ function(sinusbot, config) {
         }
         return result;
     }
-    
+
     function arrayContainsAll(array, elements){
         if (arrayMissingElements(array, elements).length > 0){
             return true;
@@ -183,7 +189,7 @@ function(sinusbot, config) {
             return false;
         }
     }
-    
+
     function arrayContainsElement(array, element){
         for (var arrayElement in array){
             if (array[arrayElement] == element){

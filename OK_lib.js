@@ -201,7 +201,7 @@ function(sinusbot, config) {
     }
 
 	function arrayCreateArray(element){
-      	if (!element.isArray()){
+      	if (!Array.isArray(element)){
           	var array = [];
         	array.push(element);
           	return array;

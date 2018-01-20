@@ -25,7 +25,7 @@ function(sinusbot, config) {
     if(engine.getBackend() == "ts3"){
         ts = true;
     }
-    
+
     engine.notify('OK_lib loaded.');
 
     /*
@@ -50,6 +50,44 @@ function(sinusbot, config) {
         }
     }
 
+  	/*
+  		Channel
+  	*/
+
+  	/**
+    * Returns a List of all Channels matching the Name
+    *
+    * @param {String} channelName The Channels Name.
+    * @returns {Channel[]} The List of all Channels matching the given Name.
+    **/
+  	function channelGetChannelByName(channelName){
+      var result = [];
+      var channels = backend.getChannels();
+      for (var channel in channels){
+        	if (channels[channel].name() == channelName){
+              	result.push(channels[channel]);
+            }
+      }
+      return result;
+    }
+
+  	/**
+    * Returns the Channel with the matching Name and the matching Parent Channel.
+    *
+    * @param {String} channelName The Channels Name.
+    * @param {number} parentID The Channel ID of the Parent.
+    * @returns {Channel} The matching Channel or null.
+    **/
+  	function channelGetChannelByNameAndParent(channelName, parentID){
+      var channels = backend.getChannels();
+      for (var channel in channels){
+        	if (channels[channel].name() == channelName && channels[channel].parent() && channels[channel].parent().id() == parentID){
+              	return channels[channel];
+            }
+      }
+      return null;
+    }
+
     /*
         Client
     */
@@ -67,6 +105,18 @@ function(sinusbot, config) {
     }
 
     /**
+    * Checks if a Client is the Member of one of the Server Groups.
+    *
+    * @param {Client} client The tested Client as a Client Object.
+    * @param {number[]} checkGroups The Groups that should be checked as an Array of GroupIDs.
+    * @returns {boolean} True if the Client is in one Group, else False.
+    **/
+    function clientServerGroupsIsMemberOfOne(client, checkGroups){
+        var serverGroups = serverGroupParseIDs(client.getServerGroups());
+        return arrayContainsOne(serverGroups, checkGroups);
+    }
+
+    /**
     * Checks if a Client is the Member of a Server Group.
     *
     * @param {Client} client The tested Client as a Client Object.
@@ -79,13 +129,13 @@ function(sinusbot, config) {
     }
 
     /**
-    * Checks if a Client is the Member of a Server Group.
+    * Checks if a Client is the Member of some Server Groups.
     *
     * @param {Client} client The tested Client as a Client Object.
     * @param {number[]} checkGroups The Groups that should be checked as an Array of GroupIDs.
     * @returns {object} Contains two arrays with GroupID's, the first with GroupID's in which the client is and the second in which the client is not.
     **/
-    function clientServerGroupsIsMemberaAndIsNotMember(client, checkGroup){
+    /*function clientServerGroupsIsMemberaAndIsNotMember(client, checkGroup){
         var isMember = [];
         var isNotMember = [];
         var memberAndNotMember = {memberOf: isMember, notMemberOf: isNotMember};
@@ -99,8 +149,57 @@ function(sinusbot, config) {
             }
         }
         return memberAndNotMember;
+    }*/
+
+	/**
+    * Searches all clients name maches and returns matches as a array object.
+    *
+    * @param {string} searchString The tested Client as a Client Object.
+    * @param {boolean} caseSensitive A optional flag to let the searcher know if the string should be treated as Case-sensitive when it is set to true or Case-insensitive when it is set to false.
+    * @returns {Client[]} Array of clients that match the search string.
+    **/
+    function clientSearchByName(searchString, caseSensitive){
+      	var matches = [];
+      	var clients = backend.getClients();
+      	for(var client in clients){
+          	if(caseSensitive && clients[client].name().indexOf(searchString) !== -1;){
+                matches.push(clients[client]);
+            }else if(!caseSensitive && clients[client].name().toLowerCase().indexOf(searchString.toLowerCase()) !== -1;){
+              	matches.push(clients[client]);
+            }
+        }
+        return matches;
     }
 
+  	/*
+    	Strings
+    */
+
+  	/**
+    * Returns the UID from a UID/ID/Name
+    *
+    * @param {string} stringToParse The string for parsing into a UID.
+    * @param {boolean} caseSensitive A optional boolean flag to let the parser know if the string should be treated as Case-sensitive when it is set to true or Case-insensitive when it is set to false.
+    * @returns {Client} returns the client object or null depending if a client was found or not.
+    **/
+    function getClient(stringToParse, caseSensitive){
+        var clients = backend.getClients();
+        for(var client in clients){
+            if(!caseSensitive && clients[client].name().toLowerCase() == stringToParse.toLowerCase()){
+                return clients[client];
+            }
+            else if(caseSensitive && clients[client].name() == stringToParse){
+                return clients[client];
+            }
+          	else if(clients[client].uid() == stringToParse){
+                return clients[client];
+            }
+            else if(clients[client].id() == stringToParse){
+                return clients[client];
+            }
+        }
+        return null;
+    }
 
     /*
         Group
@@ -118,7 +217,7 @@ function(sinusbot, config) {
         return result;
     }
 
-	function clientServerGroupAddToGroup(client, groups){
+    function clientServerGroupAddToGroup(client, groups){
         groups = arrayCreateArray(groups);
         if (groups.length > 0){
             for (var curGroup in groups){
@@ -138,14 +237,14 @@ function(sinusbot, config) {
         }
     }
 
-  	function clientServerGroupRemoveFromGroup(client, groups){
+    function clientServerGroupRemoveFromGroup(client, groups){
         groups = arrayCreateArray(groups);
         if (groups.length > 0){
             for (var curGroup in groups){
                 if (clientServerGroupsIsMemberOf(client, groups[curGroup])){
-                  	client.removeFromServerGroup(groups[curGroup]);
+                    client.removeFromServerGroup(groups[curGroup]);
                 }
-              	else {
+                else {
                     log("Group wasn't removed. Reason: The client does not have the Group ID " + groups[curGroup], 10);
                 }
             }
@@ -153,7 +252,7 @@ function(sinusbot, config) {
     }
 
     /*
-    	Helper
+        Helper
     */
 
     function arrayDifference(array, elements){
@@ -190,6 +289,15 @@ function(sinusbot, config) {
         }
     }
 
+    function arrayContainsOne(array, elements){
+        for (var element in elements){
+            if (arrayContainsElement(array, elements[element]){
+                return true;
+            }
+        }
+        return false;
+    }
+
     function arrayContainsElement(array, element){
         for (var arrayElement in array){
             if (array[arrayElement] == element){
@@ -200,20 +308,20 @@ function(sinusbot, config) {
     }
 
     function isNumber(number){
-      	if (!isNaN(number)){
-        	return true;
-      	}
-      	return false;
+        if (!isNaN(number)){
+            return true;
+        }
+        return false;
     }
 
-	function arrayCreateArray(element){
-      	if (!element.isArray()){
-          	var array = [];
-        	array.push(element);
-          	return array;
-      	}
-      	else{
-          	return element;
+    function arrayCreateArray(element){
+        if (!Array.isArray(element)){
+            var array = [];
+            array.push(element);
+            return array;
+        }
+        else{
+            return element;
         }
     }
 
@@ -221,55 +329,14 @@ function(sinusbot, config) {
         Lib Definition
     */
 
-    function messageUser(client, i){
-        setTimeout(function(){
-            client.chat(ruleArray[i].rule);
-            i++;
-            if(i < ruleArray.length){
-                messageUser(client, i);
-            }
-            else{
-                if(config.confirmRules == 1){
-                    store.set(client.uid(), 0);
-                    client.chat(confirmString);
-                    if(config.kickDecision == true){
-                        setTimeout(function(){
-                            if(store.get(client.uid()) == 0){
-                                var clientCheck = backend.getClientByUID(client.uid());
-                                if(clientCheck){
-                                    store.unset(client.uid());
-                                    client.kickFromServer(kickReasonTime);
-                                }
-                            }
-                        }, config.kickDelay * 1000);
-                    }
-                }
-                else if(config.confirmRules == 0){
-                    store.set(client.uid(), 2);
-                }
-            }
-        }, messageDelay);
-    }
-
-    function checkIfIgnore(channel){
-        if(channelIgnore.length > 0){
-            for(var i = 0; i < channelIgnore.length; i++){
-                if(channelIgnore[i].channel == channel.id()){
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     var libModule = {
         general: {
             log: log
         },
-      	client: {
-          	serverGroups: {
-              	isMemberOf: clientServerGroupsIsMemberOf,
-              	isMemberOfAll: clientServerGroupsIsMemberOfAll
+        client: {
+            serverGroups: {
+                isMemberOf: clientServerGroupsIsMemberOf,
+                isMemberOfAll: clientServerGroupsIsMemberOfAll
             }
         },
         serverGroups: {

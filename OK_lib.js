@@ -1,17 +1,21 @@
 registerPlugin({
     name: 'OK_lib',
-    engine: '>= 0.11',
+    engine: '>= 0.13.37',
     version: '0.1',
     description: 'A lib that is OK. For other scripts to use.',
     author: 'Diesmon <dontmindme12@web.de> & Tuetchen || Smorrebrod || Cedrik <cedrik.paetz@gmail.com>',
-},
-{
-    name: 'logLevel',
-    title: 'Sets a global debug log level for all scripts that use this lib. The logs will be displayed in the instance logs.',
-    type: 'number'
-},
+    vars: [
+        {
+            name: 'logLevel',
+            title: 'Sets a global debug log level for all scripts that use this lib. The logs will be displayed in the instance logs.',
+            type: 'select',
+            options: ['1','2','3','4','5','6','7','8','9','10']
+        }
+    ]
 
-function(sinusbot, config) {
+}, function(sinusbot, config) {
+
+    var event = require('event');
     var engine = require('engine');
     var store = require('store');
     var backend = require('backend');
@@ -21,20 +25,21 @@ function(sinusbot, config) {
     var helper = require('helpers');
 
     var ts = false;
-
     if(engine.getBackend() == "ts3"){
         ts = true;
     }
 
-    engine.notify('OK_lib loaded.');
+    engine.notify('OK_lib loaded');
 
     /*
         General
     */
-
+    /**
+    * A chat hook for the native SinusBot !info && !help commands.
+    **/
     event.on('chat', function(ev) {
-        if (ev.text == "!info"){
-            ev.client.chat("This bot uses the OK_lib, which is a libary for easier script functions.");
+        if (ev.text == "!info" || "!help"){
+            ev.client.chat("This bot uses the [Muss URL werden]OK_lib[/Muss URL werden], which is a libary for basic script functions.");  //URLReminder
         }
     });
 
@@ -45,7 +50,9 @@ function(sinusbot, config) {
     * @param {number} logLevel The Log Level of this Log Message.
     **/
     function log(message, logLevel){
-        if (logLevel <= config.logLevel){
+        engine.log("Loglevel im log func: " + logLevel)
+        engine.log("config.Loglevel im log func: " + config.logLevel)
+        if (logLevel-1 <= config.logLevel){
             engine.log(message);
         }
     }
@@ -61,14 +68,14 @@ function(sinusbot, config) {
     * @returns {Channel[]} The List of all Channels matching the given Name.
     **/
   	function channelGetChannelByName(channelName){
-      var result = [];
-      var channels = backend.getChannels();
-      for (var channel in channels){
+        var result = [];
+        var channels = backend.getChannels();
+        for (var channel in channels){
         	if (channels[channel].name() == channelName){
               	result.push(channels[channel]);
             }
-      }
-      return result;
+        }
+        return result;
     }
 
   	/**
@@ -79,13 +86,37 @@ function(sinusbot, config) {
     * @returns {Channel} The matching Channel or null.
     **/
   	function channelGetChannelByNameAndParent(channelName, parentID){
-      var channels = backend.getChannels();
-      for (var channel in channels){
+        var channels = backend.getChannels();
+        for (var channel in channels){
         	if (channels[channel].name() == channelName && channels[channel].parent() && channels[channel].parent().id() == parentID){
               	return channels[channel];
             }
-      }
-      return null;
+        }
+        return null;
+    }
+
+    function channelGetSubstractedUserlist(channel, userlist){
+        var result = channel.getClients();
+        if(userlist.length !== 0){
+            if(typeof(userlist[0]) === "string"){
+                for(var userS in userlist){
+                    if(objectFunctionContainsElement(result, "uid", userlist[userS])){
+                        result = arrayRemoveElement(result, backend.getClientByUID(userlist[userS]));
+                        log("Spliced user string: " + userlist[userS], 10);
+                    }
+                }
+            }
+            else if(typeof(userlist[0]) === "object"){
+                for(var userO in userlist){
+                    if(arrayContainsElement(result, userlist[userO])){
+                        result = arraySpliceElement(result, userlist[userO]);
+                        log("Spliced user object: " + userlist[userO], 10);
+                    }
+                }
+            }
+            return result;
+        }
+        return result;
     }
 
     /*
@@ -162,9 +193,9 @@ function(sinusbot, config) {
       	var matches = [];
       	var clients = backend.getClients();
       	for(var client in clients){
-          	if(caseSensitive && clients[client].name().indexOf(searchString) !== -1;){
+          	if(caseSensitive && clients[client].name().indexOf(searchString) !== -1){
                 matches.push(clients[client]);
-            }else if(!caseSensitive && clients[client].name().toLowerCase().indexOf(searchString.toLowerCase()) !== -1;){
+            }else if(!caseSensitive && clients[client].name().toLowerCase().indexOf(searchString.toLowerCase()) !== -1){
               	matches.push(clients[client]);
             }
         }
@@ -227,11 +258,11 @@ function(sinusbot, config) {
                         client.addToServerGroup(groupChecker);
                     }
                     else {
-                        log("Group wasn't added. Reason: Group ID " + groups[curGroup] + " was not found on the server", 5);
+                        log("Group wasn't added. Reason: Group ID " + groups[curGroup] + " was not found on the server", 3);
                     }
                 }
                 else {
-                    log("Group wasn't added. Reason: The client already got the Group ID " + groups[curGroup], 10);
+                    log("Group wasn't added. Reason: The client already got the Group ID " + groups[curGroup], 5);
                 }
             }
         }
@@ -245,7 +276,7 @@ function(sinusbot, config) {
                     client.removeFromServerGroup(groups[curGroup]);
                 }
                 else {
-                    log("Group wasn't removed. Reason: The client does not have the Group ID " + groups[curGroup], 10);
+                    log("Group wasn't removed. Reason: The client does not have the Group ID " + groups[curGroup], 5);
                 }
             }
         }
@@ -291,7 +322,7 @@ function(sinusbot, config) {
 
     function arrayContainsOne(array, elements){
         for (var element in elements){
-            if (arrayContainsElement(array, elements[element]){
+            if (arrayContainsElement(array, elements[element])){
                 return true;
             }
         }
@@ -307,11 +338,21 @@ function(sinusbot, config) {
         return false;
     }
 
-    function isNumber(number){
-        if (!isNaN(number)){
-            return true;
+    function arrayObjectContainsElement(array, object, element){
+        for (var arrayElement in array){
+            if (array[arrayElement][object] == element){
+                return true;
+            }
         }
         return false;
+    }
+
+    function arrayRemoveElement(array, element){
+        var result = [];
+        if (!arrayContainsElement(array, element)){
+            result.push(array[arrayElement]);
+        }
+        return result;
     }
 
     function arrayCreateArray(element){
@@ -325,6 +366,22 @@ function(sinusbot, config) {
         }
     }
 
+    function objectFunctionContainsElement(array, object, element){
+        for (var arrayElement in array){
+            if (array[arrayElement][object]() == element){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function isNumber(number){
+        if (!isNaN(number)){
+            return true;
+        }
+        return false;
+    }
+
     /*
         Lib Definition
     */
@@ -336,20 +393,34 @@ function(sinusbot, config) {
         client: {
             serverGroups: {
                 isMemberOf: clientServerGroupsIsMemberOf,
-                isMemberOfAll: clientServerGroupsIsMemberOfAll
-            }
+                isMemberOfAll: clientServerGroupsIsMemberOfAll,
+                isMemberOfOne: clientServerGroupsIsMemberOfOne,
+                addGroups: clientServerGroupAddToGroup,
+                removeGroups: clientServerGroupRemoveFromGroup,
+            },
+            get: getClient,
+            getByName: clientSearchByName,
         },
         serverGroups: {
-
+            getIDs: serverGroupParseIDs,
+        },
+        channel: {
+            getByName: channelGetChannelByName,
+            getByNameParent: channelGetChannelByNameAndParent,
+            getSubstractedUserlist: channelGetSubstractedUserlist,
         },
         chat: {
-            poke: function(bla){
 
-            },
         },
         helper: {
+            arrayDifference: arrayDifference,
+            arrayMissingElements: arrayMissingElements,
+            arrayContainsAll: arrayContainsAll,
+            arrayContainsOne: arrayContainsOne,
+            arrayContainsElement: arrayContainsElement,
+            arrayObjectContainsElement: arrayObjectContainsElement,
             isNumber: isNumber,
-            createArray: createArray
+            createArray: arrayCreateArray
         }
     };
 

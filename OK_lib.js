@@ -50,11 +50,17 @@ registerPlugin({
     * @param {number} logLevel The Log Level of this Log Message.
     **/
     function log(message, logLevel){
-        engine.log("Loglevel im log func: " + logLevel)
-        engine.log("config.Loglevel im log func: " + config.logLevel)
-        if (logLevel-1 <= config.logLevel){
-            engine.log(message);
+        if (config.logLevel>= 0){
+            if (logLevel-1 <= config.logLevel){
+                engine.log(message);
+            }
         }
+        else{
+            if (logLevel-1 <= 0){
+                engine.log(message);
+            }
+        }
+
     }
 
   	/*
@@ -95,33 +101,75 @@ registerPlugin({
         return null;
     }
 
-    function channelGetSubstractedUserlist(channel, userlist){
-        var result = channel.getClients();
+    function channelUserlistDifferenceReturnUIDlist(channel, userlist){
+        channel = clientsParseUIDs(channel.getClients());
         if(userlist.length !== 0){
-            if(typeof(userlist[0]) === "string"){
-                for(var userS in userlist){
-                    if(objectFunctionContainsElement(result, "uid", userlist[userS])){
-                        result = arrayRemoveElement(result, backend.getClientByUID(userlist[userS]));
-                        log("Spliced user string: " + userlist[userS], 10);
-                    }
-                }
-            }
-            else if(typeof(userlist[0]) === "object"){
-                for(var userO in userlist){
-                    if(arrayContainsElement(result, userlist[userO])){
-                        result = arraySpliceElement(result, userlist[userO]);
-                        log("Spliced user object: " + userlist[userO], 10);
+            var result = [];
+            for(var listUser in userlist){
+                for(var channelUser in channel){
+                    if(channel[channelUser] == userlist[listUser]){
+                        result.push(channel[channelUser]);
+                        log("Pushed user UID: " + channel[channelUser], 10);
                     }
                 }
             }
             return result;
         }
-        return result;
+        return channel;
+    }
+
+    function channelUserlistDifferenceReturnClientlist(channel, userlist){
+        channel = clientsParseUIDs(channel.getClients());
+        if(userlist.length !== 0){
+            var result = [];
+            for(var listUser in userlist){
+                for(var channelUser in channel){
+                    if(!objectFunctionEqualsElement(channel[channelUser], "uid", userlist[listUser])){
+                        result.push(backend.getClientByUID(channel[channelUser]));
+                        log("Pushed user object: " + backend.getClientByUID(channel[channelUser]), 10);
+                    }
+                }
+            }
+        }
+        return clientsParseClient(channel);
     }
 
     /*
         Client
     */
+
+    function equalClientObjects(firstClient, secondClient){
+        if(firstClient.equals(secondClient)){
+            return true;
+        }
+        return false;
+    }
+
+    function clientsParseUIDs(clients){
+        clients = arrayCreateArray(clients);
+        if (isNumber(clients[0])){
+            return clients;
+        }
+        var result = [];
+        for (var client in clients){
+            result.push(clients[client].uid());
+            log("clientsParseUIDs: Pushed UID: " + clients[client].uid(), 10);
+        }
+        return result;
+    }
+
+    function clientsParseClient(UIDs){
+        UIDs = arrayCreateArray(UIDs);
+        if (!isNumber(UIDs[0])){
+            return UIDs;
+        }
+        var result = [];
+        for (var curUID in UIDs){
+            result.push(backend.getClientByUID(UIDs[curUID]));
+            log("Pushed group: " + backend.getClientByUID(UIDs[curUID]), 10);
+        }
+        return result;
+    }
 
     /**
     * Checks if a Client is the Member of all Server Groups.
@@ -244,6 +292,20 @@ registerPlugin({
         var result = [];
         for (var serverGroup in serverGroups){
             result.push(serverGroups[serverGroup].id());
+            log("Pushed ID: " + serverGroups[serverGroup].id(), 10);
+        }
+        return result;
+    }
+
+    function serverGroupParseGroups(groupIDs){
+        groupIDs = arrayCreateArray(groupIDs);
+        if (!isNumber(groupIDs[0])){
+            return groupIDs;
+        }
+        var result = [];
+        for (var curID in groupIDs){
+            result.push(backend.getServerGroupByID(groupIDs[curID]));
+            log("Pushed group: " + backend.getServerGroupByID(groupIDs[curID]), 10);
         }
         return result;
     }
@@ -338,6 +400,10 @@ registerPlugin({
         return false;
     }
 
+    function arrayGetIndex(array, element){
+        return array.indexOf(element);
+    }
+
     function arrayObjectContainsElement(array, object, element){
         for (var arrayElement in array){
             if (array[arrayElement][object] == element){
@@ -345,14 +411,6 @@ registerPlugin({
             }
         }
         return false;
-    }
-
-    function arrayRemoveElement(array, element){
-        var result = [];
-        if (!arrayContainsElement(array, element)){
-            result.push(array[arrayElement]);
-        }
-        return result;
     }
 
     function arrayCreateArray(element){
@@ -366,11 +424,26 @@ registerPlugin({
         }
     }
 
-    function objectFunctionContainsElement(array, object, element){
+    /*function arrayRemoveElement(array, element){
+        if (arrayContainsObject(array, element)){
+            engine.log("index vom remove element ist: "+ arrayGetIndex(array, element));
+            array.splice(arrayGetIndex(array, element),1);
+        }
+        return array;
+    }*/
+
+    /*function arrayObjectFunctionEqualsElement(array, property, element){
         for (var arrayElement in array){
             if (array[arrayElement][object]() == element){
                 return true;
             }
+        }
+        return false;
+    }*/
+
+    function objectFunctionEqualsElement(object, property, element){
+        if (object[property]() == element){
+            return true;
         }
         return false;
     }
@@ -400,14 +473,18 @@ registerPlugin({
             },
             get: getClient,
             getByName: clientSearchByName,
+            clientsToUIDs: clientsParseUIDs,
+            UIDsToClients: clientsParseClient,
         },
         serverGroups: {
             getIDs: serverGroupParseIDs,
+            getGroups: serverGroupParseGroups,
         },
         channel: {
             getByName: channelGetChannelByName,
             getByNameParent: channelGetChannelByNameAndParent,
-            getSubstractedUserlist: channelGetSubstractedUserlist,
+            getSubstractedUIDlist: channelUserlistDifferenceReturnUIDlist,
+            getSubstractedClientlist: channelUserlistDifferenceReturnClientlist,
         },
         chat: {
 
@@ -419,6 +496,7 @@ registerPlugin({
             arrayContainsOne: arrayContainsOne,
             arrayContainsElement: arrayContainsElement,
             arrayObjectContainsElement: arrayObjectContainsElement,
+            objectFunctionEqualsElement: objectFunctionEqualsElement,
             isNumber: isNumber,
             createArray: arrayCreateArray
         }

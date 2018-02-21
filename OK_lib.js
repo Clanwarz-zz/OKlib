@@ -50,7 +50,7 @@ registerPlugin({
     * @param {number} logLevel The Log Level of this Log Message.
     **/
     function log(message, logLevel){
-        if (config.logLevel>= 0){
+        if (config.logLevel >= 0){
             if (logLevel-1 <= config.logLevel){
                 engine.log(message);
             }

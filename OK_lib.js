@@ -39,7 +39,7 @@ registerPlugin({
     **/
     event.on('chat', function(ev) {
         if (ev.text == "!info" || "!help"){
-            ev.client.chat("This bot uses the [Muss URL werden]OK_lib[/Muss URL werden], which is a libary for basic script functions.");  //URLReminder
+            ev.client.chat("This bot uses the OK_lib, which is a libary for basic script functions.");
         }
     });
 
@@ -55,12 +55,6 @@ registerPlugin({
                 engine.log(message);
             }
         }
-        else{
-            if (logLevel-1 <= 0){
-                engine.log(message);
-            }
-        }
-
     }
 
   	/*
@@ -101,6 +95,13 @@ registerPlugin({
         return null;
     }
 
+    /**
+    * Returns the difference between the clients in a channel and .
+    *
+    * @param {String} channelName The Channels Name.
+    * @param {number} parentID The Channel ID of the Parent.
+    * @returns {Channel} The matching Channel or null.
+    **/
     function channelUserlistDifferenceReturnUIDlist(channel, userlist){
         channel = clientsParseUIDs(channel.getClients());
         if(userlist.length !== 0){
@@ -130,6 +131,7 @@ registerPlugin({
                     }
                 }
             }
+            return result;
         }
         return clientsParseClient(channel);
     }
@@ -347,6 +349,16 @@ registerPlugin({
     /*
         Helper
     */
+
+    function objectArrayParseAttribute(array, attribute){
+        array = arrayCreateArray(array);
+        var result = [];
+        for (var object in objects){
+            result.push(array[object][attribute]);
+            log("Pushed ID: " + array[object][attribute], 10);
+        }
+        return result;
+    }
 
     function arrayDifference(array, elements){
         var result = [];

@@ -175,8 +175,8 @@ registerPlugin({
         log("clientSubstraction: Results found: '" + result.length + "'", 4);
         return result;
     }*/
-    function clientDifference(listone, listtwo){
-        return arrayDifference(listone, listtwo, equalClientObjects);
+    function clientRemoveClients(listone, listtwo){
+        return arrayRemoveElements(listone, listtwo, equalClientObjects);
     }
 
     /**
@@ -439,13 +439,13 @@ registerPlugin({
         var result = [];
         for(var arrayElement in array){
             result.push(array[arrayElement]);
-            log("arrayCombineArrays: T Pushed client "+ array[arrayElement].name(), 5);
+            log("arrayCombineArrays: Added client '" + array[arrayElement] + "' from the first array into the combined one'", 5);
         }
         for(var element in elements){
             result.push(elements[element]);
-            log("arrayCombineArrays: D Pushed client "+ elements[element].name(), 5);
+            log("arrayCombineArrays: Added client '"+ elements[element] + "' from the second array into the combined one'", 5);
         }
-        log("arrayCombineArrays: The combined result has '" + result.length + "' entries now", 5);
+        log("arrayCombineArrays: The combined result has '" + result.length + "' entries now", 4);
         return result;
     }
 
@@ -540,6 +540,7 @@ registerPlugin({
         if (!compare){
           	compare = equal;
         }
+        array = arrayCreateArray(array);
         elements = arrayCreateArray(elements);
         var result = [];
         for(var arrayElement in array){
@@ -607,7 +608,7 @@ registerPlugin({
         client: {
             equal: equalClientObjects,
             getUIDs: clientParseUIDs,
-            getDifference: clientDifference,
+            removeClients: clientRemoveClients,
             search: {
                 byAll: clientSearchByAll,
                 multipleByAll: clientsSearchByAll,

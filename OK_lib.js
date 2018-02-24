@@ -9,7 +9,7 @@ registerPlugin({
             name: 'logLevel',
             title: 'Sets a global debug log level for all scripts that use this lib. The logs will be displayed in the instance logs.',
             type: 'select',
-            options: ['1 - Critical','2 - Error','3 - Nothing found','4 - Light debug','5 - Full debug']
+            options: ['1 - Critical','2 - Error','3 - Missing items','4 - Debug','5 - Balls of steel']
         }
     ]
 
@@ -26,29 +26,19 @@ registerPlugin({
 
     engine.notify('OK_lib loaded');
 
-    var ts = false;
-    if(engine.getBackend() == "ts3"){
-        ts = true;
-    }
+    var backendEngine = engine.getBackend();
 
     var activeBotInstances = [];
     engine.on('load', function() {
-        event.broadcast('OKlib_register_instance', {botclient: backend.getBotClient()});
-    });
-
-    event.on('OKlib_register_instance', function(ev){
-        if(!arrayContainsElement(activeBotInstances, ev.botclient, equalClientObjects)){
-            activeBotInstances.push(ev.botclient);
+       	var currentInstances = store.get('activeBotInstances');
+      	if (!currentInstances){
+          	currentInstances = [];
         }
+      	currentInstances.push(backend.getBotClientID());
+      	currentInstances = arrayCreateSet(currentInstances);
+      	store.set('activeBotInstances', currentInstances);
     });
 
-    event.on('disconnect', function(){
-        event.broadcast('OKlib_unregister_instance', {botclient: backend.getBotClient()});
-    });
-
-    event.on('OKlib_unregister_instance', function(ev){
-        activeBotInstances = arrayRemoveElements(activeBotInstances, ev.botclient, equalClientObjects);
-    });
 
     /*
         General
@@ -77,12 +67,30 @@ registerPlugin({
     }
 
     function getActiveBotInstances(){
-        return activeBotInstances;
+        var currentInstances = store.get('activeBotInstances');
+      	result = [];
+      	newStore = [];
+      	for (var element in currentInstances){
+          	var currentClient = Backend.getClientByUniqueID(currentInstances[element]);
+          	if (currentClient){
+              	log("getActiveBotInstances: Active Bot " + printObject(currentClient) + " found", 5);
+              	newStore.push(currentInstances[element]);
+              	result.push(currentClient);
+            }else{
+              	log("getActiveBotInstances: Offline Bot " + currentInstances[element] + " removed", 4);
+            }
+        }
+      	store.set('activeBotInstances', newStore);
+      	return result;
     }
 
   	/*
   		Channel
   	*/
+
+  	function channelToString(channel){
+      	return ("["+channel.id()+": "+channel.name()+"]");
+    }
 
   	/**
     * Returns a List of all Channels matching the Name
@@ -122,18 +130,49 @@ registerPlugin({
         Client
     */
 
+  	function clientToString(client){
+      	return ("["+client.id()+"/"+client.uid()+": "+client.nick()+"]");
+    }
+
+  	function clientToURLString(client){
+      	return ("[URL=client://"+client.id()+"/"+client.uid()+"]"+client.nick()+"[/URL]");
+    }
+
     function equalClientObjects(firstClient, secondClient){
         return firstClient.equals(secondClient);
     }
 
+    function clientFilterByClients(clients, array){
+        return arrayRemoveElements(clients, array, equalClientObjects);
+    }
+
+    function clientFilterByServergroups(clients, array){
+        clients = arrayCreateArray(clients);
+        if(client.length == 0){
+            log(" clientFilterByServergroup: Provided no client to filter for", 3);
+            return;
+        }
+        result = [];
+        for(var curClient in clients){
+            if(!arrayContainsOne(arrayObjectParseAttribute(clients[curClient].getGroups(), id, true), array)){
+                result.push(clients[curClient]);
+            }
+        }
+        return result;
+    }
+
     function clientParseUIDs(clients){
         clients = arrayCreateArray(clients);
+        if(clients.length == 0){
+            log(" clientFilterByServergroup: Provided no servergroup to filter for", 3);
+            return;
+        }
         var result = [];
         for (var client in clients){
             result.push(clients[client].uid());
-            log("clientsParseUIDs: Resolved UID '" + clients[client].uid() + "'", 50);
+            log("clientsParseUIDs: Resolved UID '" + clients[client].uid() + "'", 5);
         }
-      	log("clientsParseUIDs: Results found: '" + result.length + "'", 4);
+      	log("clientsParseUIDs: UIDs resolved: '" + result.length + "'", 4);
         return result;
     }
 
@@ -144,80 +183,14 @@ registerPlugin({
           	var client = backend.getClientByUID(UIDs[curUID]);
           	if(client){
             	result.push(client);
-            	log("clientsParseClient: Resolved UID '" + UIDs[curUID] + "' to '" + JSON.stringify(client) + "'", 5);
+            	log("clientsParseClient: Resolved UID '" + UIDs[curUID] + "' to '" + printObject(client) + "'", 5);
             }
           	else{
               	log("clientsParseClient: A client with the UID '" + UIDs[curUID] + "' could not be found on the server", 3);
             }
         }
+      	log("clientsParseClients: Clients resolved: '" + result.length + "'", 4);
         return result;
-    }
-
-    /**
-    * Returns the result between the two sets of clientlists.
-    *
-    * @param {String} channelName The Channels Name.
-    * @param {number} parentID The Channel ID of the Parent.
-    * @returns {Channel} The matching Channel or null.
-    **/
-    /*function clientSubstraction(originlist, substractlist){
-      	originlist = arrayCreateArray(originlist);
-      	substractlist = arrayCreateArray(substractlist);
-        var result = [];
-        for(var clientS in substractlist){
-            for(var clientO in originlist){
-                if(!equalClientObjects(originlist[clientO], substractlist[clientS])){
-                    result.push(originlist[clientO]);
-                    log("clientSubstraction: The client '" + JSON.stringify(originlist[clientO]) + "' is part of the resultlist", 5);
-                }
-            }
-        }
-        log("clientSubstraction: Results found: '" + result.length + "'", 4);
-        return result;
-    }*/
-    function clientRemoveClients(listone, listtwo){
-        return arrayRemoveElements(listone, listtwo, equalClientObjects);
-    }
-
-    /**
-    * Returns a client by a full or part name match or by a UID or ID match
-    *
-    * @param {string} stringToParse The string to compare the clients attributes with.
-    * @param {boolean} partMatch A flag if the part matches should also count as match (Beware: first triggered partMatch will return the client)
-    * @param {boolean} caseSensitive A optional boolean flag to let the parser know if the string should be treated as Case-sensitive when it is set to true or Case-insensitive when it is set to false.
-    * @returns {Client} returns the client object or null depending if a client was found or not.
-    **/
-    function clientSearchByAll(stringToParse, partMatch, caseSensitive){
-        var clients = backend.getClients();
-      	if(caseSensitive){
-          	stringToParse = stringToParse.toLowerCase();
-        }
-      	var compare = equal;
-      	if (partMatch){
-          	compare = function(name, string){
-              	return name.indexOf(string) != -1;
-            };
-        }
-        for(var client in clients){
-          	clientName = clients[client].name();
-          	if(caseSensitive){
-              	clientName = clientName.toLowerCase();
-            }
-          	if(compare(clientName, stringToParse)){
-                log("clientSearchByAll: Found a name match between '" + stringToParse + "' and '" + JSON.stringify(clients[client]) + "'", 5);
-          		return clients[client];
-            }
-      		else if(clients[client].uid() == stringToParse){
-                log("clientSearchByAll: Found a UID match between '" + stringToParse + "' and '" + JSON.stringify(clients[client]) + "'", 5);
-                return clients[client];
-            }
-            else if(clients[client].id() == stringToParse){
-                log("clientSearchByAll: Found a ID match between '" + stringToParse + "' and '" + JSON.stringify(clients[client]) + "'", 5);
-                return clients[client];
-            }
-        }
-      	log("clientsSearchByAll: No result found", 4);
-        return null;
     }
 
 	/**
@@ -247,15 +220,15 @@ registerPlugin({
             }
           	if(compare(clientName, stringToParse)){
                 result.push(clients[client]);
-                log("clientsSearchByAll: Found a part match between '" + stringToParse + "' and '" + JSON.stringify(clients[client]) + "'", 5);
+                log("clientsSearchByAll: Found a part match between '" + stringToParse + "' and '" + printObject(clients[client]) + "'", 5);
             }
             else if(clients[client].uid() == stringToParse){
                 result.push(clients[client]);
-                log("clientsSearchByAll: Found a UID match between '" + stringToParse + "' and '" + JSON.stringify(clients[client]) + "'", 5);
+                log("clientsSearchByAll: Found a UID match between '" + stringToParse + "' and '" + printObject(clients[client]) + "'", 5);
             }
             else if(clients[client].id() == stringToParse){
                 result.push(clients[client]);
-                log("clientsSearchByAll: Found a ID match between '" + stringToParse + "' and '" + JSON.stringify(clients[client]) + "'", 5);
+                log("clientsSearchByAll: Found a ID match between '" + stringToParse + "' and '" + printObject(clients[client]) + "'", 5);
             }
         }
       	if(result.length == 0){
@@ -300,86 +273,39 @@ registerPlugin({
         return arrayContainsElement(serverGroups, checkGroup);
     }
 
-    function clientServerGroupAddToGroup(client, groups){
+    function clientServerGroupAddToGroups(client, groups){
         groups = arrayCreateArray(groups);
-        if (groups.length > 0){
-            for (var curGroup in groups){
-                if (!clientServerGroupsIsMemberOf(client, groups[curGroup])){
-                    var group = backend.getServerGroupByID(groups[curGroup]);
-                    if (group){
-                        client.addToServerGroup(group);
-                      	log("clientServerGroupAddToGroup: The '" + JSON.stringify(client) + "' was added to the servergroup: '" + JSON.stringify(group) + "'", 5);
-                    }
-                    else {
-                        log("clientServerGroupAddToGroup: A servergroup with the ID '" + groups[curGroup] + "' was not found on the server", 2);
-                    }
-                }
-                else {
-                    log("clientServerGroupAddToGroup: The '" + JSON.stringify(client) + "' already has the servergroup with the ID '" + groups[curGroup] + "'", 3);
-                }
-            }
+      	if(groups.length == 0){
+            log("clientServerGroupAddToGroups: Provided no group to add", 3);
+            return;
         }
-    }
-
-    function clientServerGroupRemoveFromGroup(client, groups){
-        groups = arrayCreateArray(groups);
-        if (groups.length > 0){
-            for (var curGroup in groups){
-                if (clientServerGroupsIsMemberOf(client, groups[curGroup])){
-                    client.removeFromServerGroup(groups[curGroup]);
-                  	log("clientServerGroupRemoveFromGroup: '" + JSON.stringify(client) + "' was removed from the servergroup: '" + JSON.stringify(groups[curGroup]) +"'", 5);
-                }
-                else {
-                    log("clientServerGroupRemoveFromGroup: '" + JSON.stringify(client) + "' did not had the group with the ID '" + groups[curGroup] + "'", 5);
-                }
-            }
-        }
-    }
-
-    /**
-    * Checks if a Client is the Member of some Server Groups.
-    *
-    * @param {Client} client The tested Client as a Client Object.
-    * @param {number[]} checkGroups The Groups that should be checked as an Array of GroupIDs.
-    * @returns {object} Contains two arrays with GroupID's, the first with GroupID's in which the client is and the second in which the client is not.
-    **/
-    /*function clientServerGroupsIsMemberaAndIsNotMember(client, checkGroup){
-        var isMember = [];
-        var isNotMember = [];
-        var memberAndNotMember = {memberOf: isMember, notMemberOf: isNotMember};
-        var serverGroups = client.getServerGroups();
-        for (var serverGroup in serverGroups){
-            if (clientServerGroupsIsMemberOf(client, serverGroups[serverGroup].id())){
-                isMember.push(serverGroups[serverGroup].id());
+        for (var curGroup in groups){
+            if (!clientServerGroupsIsMemberOf(client, groups[curGroup])){
+                client.addToServerGroup(groups[curGroup]);
+                log("clientServerGroupAddToGroups: Client '" + printObject(client) + "' was added to the servergroup: '" + printObject(groups[curGroup]) + "'", 5);
             }
             else {
-                isNotMember.push(serverGroups[serverGroup].id());
+              	log("clientServerGroupAddToGroups: Client '" + printObject(client) + "' already has the servergroup '" + printObject(groups[curGroup]) + "'", 3);
             }
         }
-        return memberAndNotMember;
-    }*/
+    }
 
-	/**
-    * Searches all clients name maches and returns matches as a array object.
-    *
-    * @param {string} searchString The tested Client as a Client Object.
-    * @param {boolean} caseSensitive A optional flag to let the searcher know if the string should be treated as Case-sensitive when it is set to true or Case-insensitive when it is set to false.
-    * @returns {Client[]} Array of clients that match the search string.
-    **/
-    /*function clientSearchByName(searchString, caseSensitive){
-      	var matches = [];
-      	var clients = backend.getClients();
-      	for(var client in clients){
-          	if(!caseSensitive && clients[client].name().toLowerCase().indexOf(searchString.toLowerCase()) !== -1){
-                matches.push(clients[client]);
-              	log("clientSearchByName: Found a case ignoring match between '" + searchString + "' and '" + JSON.stringify(clients[client]) + "'", 5);
-            }else if(caseSensitive && clients[client].name().indexOf(searchString) !== -1){
-              	matches.push(clients[client]);
-              	log("clientSearchByName: Found a match between '" + searchString + "' and '" + JSON.stringify(clients[client]) + "'", 5);
+    function clientServerGroupRemoveFromGroups(client, groups){
+        groups = arrayCreateArray(groups);
+        if(groups.length == 0){
+            log("clientServerGroupAddToGroups: Provided no group to remove", 3);
+            return;
+        }
+        for (var curGroup in groups){
+        	if (clientServerGroupsIsMemberOf(client, groups[curGroup])){
+                client.removeFromServerGroup(groups[curGroup]);
+                log("clientServerGroupRemoveFromGroups: Client '" + printObject(client) + "' was removed from the servergroup: '" + printObject(groups[curGroup]) +"'", 5);
+            }
+            else {
+                log("clientServerGroupRemoveFromGroups: Client '" + printObject(client) + "' did not had the group '" + printObject(groups[curGroup]) + "'", 5);
             }
         }
-        return matches;
-    }*/
+    }
 
   	/*
     	Strings
@@ -389,6 +315,20 @@ registerPlugin({
         Group
     */
 
+    /**
+     * [groupToString description]
+     * @param  {[type]} serverGroup [description]
+     * @return {[type]}             [description]
+     */
+  	function groupToString(serverGroup){
+      	return ("["+serverGroup.id()+": "+serverGroup.name()+"]");
+    }
+
+    /**
+     * [serverGroupParseIDs description]
+     * @param  {[type]} serverGroups [description]
+     * @return {[type]}              [description]
+     */
     function serverGroupParseIDs(serverGroups){
         serverGroups = arrayCreateArray(serverGroups);
         if (isNumber(serverGroups[0])){
@@ -397,11 +337,16 @@ registerPlugin({
         var result = [];
         for (var serverGroup in serverGroups){
             result.push(serverGroups[serverGroup].id());
-          	log("serverGroupParseIDs: Resolved the servergroup '" + JSON.stringify(serverGroups[serverGroup]) + "' to the ID '" + serverGroups[serverGroup].id() + "'", 5);
+          	log("serverGroupParseIDs: Resolved the servergroup '" + printObject(serverGroups[serverGroup]) + "' to the ID '" + serverGroups[serverGroup].id() + "'", 5);
         }
         return result;
     }
 
+    /**
+     * [serverGroupParseGroups description]
+     * @param  {[type]} groupIDs [description]
+     * @return {[type]}          [description]
+     */
     function serverGroupParseGroups(groupIDs){
         groupIDs = arrayCreateArray(groupIDs);
         if (!isNumber(groupIDs[0])){
@@ -412,7 +357,7 @@ registerPlugin({
           	var group = backend.getServerGroupByID(groupIDs[curID]);
             if (group){
                 result.push(group);
-                log("serverGroupParseGroups: Resolved the ID '" + groupIDs[curID] + "' to the servergroup '" + JSON.stringify(group) + "'", 5);
+                log("serverGroupParseGroups: Resolved the ID '" + groupIDs[curID] + "' to the servergroup '" + printObject(group) + "'", 5);
             }
           	else{
               	log("serverGroupParseGroups: A servergroup with the ID '" + groupIDs[curID] + "' was not found on the server", 2);
@@ -422,9 +367,118 @@ registerPlugin({
     }
 
     /*
+    	User
+    */
+
+    /**
+     * [userToString description]
+     * @param  {[type]} user [description]
+     * @return {[type]}      [description]
+     */
+    function userToString(user){
+      	return ("["+user.id()+": "+user.name()+"]");
+    }
+
+    /*
+    	Track
+    */
+
+    /**
+     * [trackToString description]
+     * @param  {[type]} track [description]
+     * @return {[type]}       [description]
+     */
+    function trackToString(track){
+      	return ("["+track.artist()+": "+track.title()+"]");
+    }
+
+    /*
+    	Playlist
+    */
+
+    /**
+     * [playlistToString description]
+     * @param  {[type]} playlist [description]
+     * @return {[type]}          [description]
+     */
+    function playlistToString(playlist){
+      	return ("["+playlist.id()+": "+playlist.name()+"]");
+    }
+
+    /*
         Helper
     */
 
+    function empty(element){
+        if (typeof element === 'undefined' || !element){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * [printObject description]
+     * @param  {[type]} object [description]
+     * @return {[type]}        [description]
+     */
+    function printObject(object){
+      	try{
+          	object.firstSeen();
+          	return clientToString(object);
+        }catch(err){
+          	try{
+              	object.icon();
+              	return groupToString(object);
+            }catch(err){
+                  try{
+                      object.codec();
+                      return channelToString(object);
+                  }catch(err){
+						try{
+                            object.isAdmin();
+                            return userToString(object);
+                        }catch(err){
+                              try{
+                                  object.artist();
+                                  return trackToString(object);
+                              }catch(err){
+                                    try{
+                                        object.getTracks();
+                                        return playlistToString(object);
+                                    }catch(err){
+                                          return ""+object;
+                                    }
+                              }
+                        }
+                  }
+          	}
+        }
+    }
+
+    /**
+     * [arrayToString description]
+     * @param  {[type]} array [description]
+     * @return {[type]}       [description]
+     */
+    function arrayToString(array){
+      	var result = "[";
+      	for (var element in array){
+        	result += printObject(array[element]);
+          	if (element+1 < array.length){
+              	result += ",";
+            }
+      	}
+      	result += "]";
+      	return result;
+    }
+
+    /**
+     * [arrayContainsAll description]
+     * @param  {[type]} array    [description]
+     * @param  {[type]} elements [description]
+     * @param  {[type]} compare  [description]
+     * @return {[type]}          [description]
+     */
     function arrayContainsAll(array, elements, compare){
         if (arrayMissingElements(array, elements, compare).length > 0){
             return true;
@@ -433,22 +487,35 @@ registerPlugin({
         }
     }
 
+    /**
+     * [arrayCombineArrays description]
+     * @param  {[type]} array    [description]
+     * @param  {[type]} elements [description]
+     * @return {[type]}          [description]
+     */
     function arrayCombineArrays(array, elements){
         array = arrayCreateArray(array);
         elements = arrayCreateArray(elements);
         var result = [];
         for(var arrayElement in array){
             result.push(array[arrayElement]);
-            log("arrayCombineArrays: Added client '" + array[arrayElement] + "' from the first array into the combined one'", 5);
+            log("arrayCombineArrays: Added '" + printObject(array[arrayElement]) + "' from the first array into the combined one'", 5);
         }
         for(var element in elements){
             result.push(elements[element]);
-            log("arrayCombineArrays: Added client '"+ elements[element] + "' from the second array into the combined one'", 5);
+            log("arrayCombineArrays: Added '" + printObject(elements[element]) + "' from the second array into the combined one'", 5);
         }
         log("arrayCombineArrays: The combined result has '" + result.length + "' entries now", 4);
         return result;
     }
 
+    /**
+     * [arrayContainsElement description]
+     * @param  {[type]} array   [description]
+     * @param  {[type]} element [description]
+     * @param  {[type]} compare [description]
+     * @return {[type]}         [description]
+     */
     function arrayContainsElement(array, element, compare){
       	if (!compare){
           	compare = equal;
@@ -461,6 +528,13 @@ registerPlugin({
         return false;
     }
 
+    /**
+     * [arrayContainsOne description]
+     * @param  {[type]} array    [description]
+     * @param  {[type]} elements [description]
+     * @param  {[type]} compare  [description]
+     * @return {[type]}          [description]
+     */
     function arrayContainsOne(array, elements, compare){
         for (var element in elements){
             if (arrayContainsElement(array, elements[element], compare)){
@@ -470,6 +544,11 @@ registerPlugin({
         return false;
     }
 
+    /**
+     * [arrayCreateArray description]
+     * @param  {[type]} element [description]
+     * @return {[type]}         [description]
+     */
     function arrayCreateArray(element){
         if (!Array.isArray(element)){
             var array = [];
@@ -481,24 +560,60 @@ registerPlugin({
         }
     }
 
+    /**
+     * [arrayCreateSet description]
+     * @param  {[type]} array   [description]
+     * @param  {[type]} compare [description]
+     * @return {[type]}         [description]
+     */
+  	function arrayCreateSet(array, compare){
+        var result = [];
+      	if (!Array.isArray(array)){
+            result.push(array);
+            return result;
+        }
+        else{
+          	for (var element in array){
+              	if (!arrayContainsElement(result, array[element], compare)){
+                  	result.push(element);
+                }
+            }
+            return result;
+        }
+    }
+
+    /**
+     * [arrayDifference description]
+     * @param  {[type]} array    [description]
+     * @param  {[type]} elements [description]
+     * @param  {[type]} compare  [description]
+     * @return {[type]}          [description]
+     */
     function arrayDifference(array, elements, compare){
         var result = [];
         for (var element in elements){
             if (!arrayContainsElement(array, elements[element], compare)){
                 result.push(elements[element]);
-                log("arrayDifference: Added '" + elements[element].name() + "' into the resultlist", 5);
+                log("arrayDifference: Added '" + printObject(elements[element]) + "' into the resultarray", 5);
             }
         }
         for (var arrayElement in array){
             if (!arrayContainsElement(elements, array[arrayElement], compare)){
                 result.push(array[arrayElement]);
-                log("arrayDifference: Added '" + elements[element].name() + "' into the resultlist", 5);
+                log("arrayDifference: Added '" + printObject(array[arrayElement]) + "' into the resultarray", 5);
             }
         }
         log("arrayDifference: results found '" + result.length + "'", 4);
         return result;
     }
 
+    /**
+     * [arrayGetIndex description]
+     * @param  {[type]} array   [description]
+     * @param  {[type]} element [description]
+     * @param  {[type]} compare [description]
+     * @return {[type]}         [description]
+     */
     function arrayGetIndex(array, element, compare){
         if (!compare){
           	compare = equal;
@@ -511,11 +626,16 @@ registerPlugin({
         return -1;
     }
 
+    /**
+     * [arrayRemoveUndefined description]
+     * @param  {[type]} array [description]
+     * @return {[type]}       [description]
+     */
     function arrayRemoveUndefined(array){
         array = arrayCreateArray(array);
         var result = [];
         for (var element in array){
-            if (!(typeof array[element] === 'undefined' || !array[element])){
+            if (!empty(array[element])){
                 result.push(array[element]);
             }
         }
@@ -523,19 +643,33 @@ registerPlugin({
         return result;
     }
 
+    /**
+     * [arrayMissingElements description]
+     * @param  {[type]} array    [description]
+     * @param  {[type]} elements [description]
+     * @param  {[type]} compare  [description]
+     * @return {[type]}          [description]
+     */
     function arrayMissingElements(array, elements, compare){
         elements = arrayCreateArray(elements);
         var result = [];
         for (var element in elements){
             if (!arrayContainsElement(array, elements[element], compare)){
                 result.push(elements[element]);
-                log("arrayMissingElements: Added '" + elements[element] + "' into the resultlist", 5);
+                log("arrayMissingElements: Added '" + printObject(elements[element]) + "' into the resultlist", 5);
             }
         }
         log("arrayMissingElements: results found '" + result.length + "'", 4);
         return result;
     }
 
+    /**
+     * [arrayRemoveElements description]
+     * @param  {[type]} array    [description]
+     * @param  {[type]} elements [description]
+     * @param  {[type]} compare  [description]
+     * @return {[type]}          [description]
+     */
     function arrayRemoveElements(array, elements, compare){
         if (!compare){
           	compare = equal;
@@ -547,7 +681,7 @@ registerPlugin({
             for(var element in elements){
                 if (!compare(array[arrayElement], elements[element])){
                     result.push(array[arrayElement]);
-                    log("arrayRemoveElements: Added '" + array[arrayElement] + "' into the resultlist", 5);
+                    log("arrayRemoveElements: Added '" + printObject(array[arrayElement]) + "' into the resultlist", 5);
                 }
             }
         }
@@ -555,30 +689,56 @@ registerPlugin({
         return result;
     }
 
+    /**
+     * [equal description]
+     * @param  {[type]} a [description]
+     * @param  {[type]} b [description]
+     * @return {[type]}   [description]
+     */
   	function equal(a, b){
       	return (a == b);
     }
 
+    /**
+     * [isNumber description]
+     * @param  {[type]}  number [description]
+     * @return {Boolean}        [description]
+     */
     function isNumber(number){
       	return !isNaN(number);
     }
 
-    function objectArrayParseAttribute(array, attribute, isFunction){
+    /**
+     * [arrayObjectParseAttribute description]
+     * @param  {[type]}  array      [description]
+     * @param  {[type]}  attribute  [description]
+     * @param  {Boolean} isFunction [description]
+     * @return {[type]}             [description]
+     */
+    function arrayObjectParseAttribute(array, attribute, isFunction){
         array = arrayCreateArray(array);
         var result = [];
         for (var object in array){
           	if (isFunction){
               	result.push(array[object][attribute]());
-            	log("objectArrayParseAttribute: Parsed '" + array[object][attribute]() + "' into the resultlist", 5);
+            	log("arrayObjectParseAttribute: Parsed '" + array[object][attribute]() + "' into the resultlist", 5);
             }else{
             	result.push(array[object][attribute]);
-            	log("objectArrayParseAttribute: Parsed '" + array[object][attribute]() + "' into the resultlist", 5);
+            	log("arrayObjectParseAttribute: Parsed '" + array[object][attribute]() + "' into the resultlist", 5);
             }
         }
-        log("objectArrayParseAttribute: results found '" + result.length + "'", 4);
+        log("arrayObjectParseAttribute: results found '" + result.length + "'", 4);
         return result;
     }
 
+    /**
+     * [objectFunctionEqualsElement description]
+     * @param  {[type]} object   [description]
+     * @param  {[type]} property [description]
+     * @param  {[type]} element  [description]
+     * @param  {[type]} compare  [description]
+     * @return {[type]}          [description]
+     */
     function objectFunctionEqualsElement(object, property, element, compare){
       	if (!compare){
           	compare = equal;
@@ -597,58 +757,77 @@ registerPlugin({
         },
 
         channel: {
+          	toString: channelToString,
             getByName: channelGetChannelByName,
-            getByNameParent: channelGetChannelByNameAndParent,
-        },
-
-        uid:{
-            toClients: clientParseClients,
+            getByNameAndParent: channelGetChannelByNameAndParent,
         },
 
         client: {
+          	toString: clientToString,
+          	toURLString: clientToURLString,
             equal: equalClientObjects,
-            getUIDs: clientParseUIDs,
-            removeClients: clientRemoveClients,
+            filterByClients: clientFilterByClients,
+            filterByServergroups: clientFilterByServergroups,
+            toUIDs: clientParseUIDs,
+          	parseFromUIDs: clientParseClients,
             search: {
-                byAll: clientSearchByAll,
-                multipleByAll: clientsSearchByAll,
+                findAll: clientsSearchByAll,
             },
             serverGroups: {
-                isMemberOf: clientServerGroupsIsMemberOf,
+                isMemberOfGroup: clientServerGroupsIsMemberOf,
                 isMemberOfAll: clientServerGroupsIsMemberOfAll,
                 isMemberOfOne: clientServerGroupsIsMemberOfOne,
-                addGroups: clientServerGroupAddToGroup,
-                removeGroups: clientServerGroupRemoveFromGroup,
+                addToGroups: clientServerGroupAddToGroups,
+                removeFromGroups: clientServerGroupRemoveFromGroups,
             },
+        },
+
+      	channelGroup: {
+          	toString: groupToString,
         },
 
         serverGroups: {
-            getIDs: serverGroupParseIDs,
-            getGroups: serverGroupParseGroups,
+          	toString: groupToString,
+            toIDs: serverGroupParseIDs,
+            toGroups: serverGroupParseGroups,
         },
 
-        chat: {
+        user: {
+			toString: userToString,
+        },
 
+      	track: {
+			track: trackToString,
+        },
+
+      	playlist: {
+			playlist: playlistToString,
         },
 
         helper: {
-            arrayCombineArrays: arrayCombineArrays,
-            arrayContainsAll: arrayContainsAll,
-            arrayContainsElement: arrayContainsElement,
-            arrayContainsOne: arrayContainsOne,
-            arrayCreateArray: arrayCreateArray,
-            arrayDifference: arrayDifference,
-            arrayGetIndex: arrayGetIndex,
-            arrayMissingElements: arrayMissingElements,
-            arrayRemoveElements: arrayRemoveElements,
-            arrayRemoveUndefined: arrayRemoveUndefined,
-            equal: equal,
+          	printObject: printObject,
+          	array: {
+              	toString: arrayToString,
+                combineArrays: arrayCombineArrays,
+                containsAll: arrayContainsAll,
+                containsElement: arrayContainsElement,
+                containsOne: arrayContainsOne,
+                createArray: arrayCreateArray,
+              	toSet: arrayCreateSet,
+                difference: arrayDifference,
+                getIndex: arrayGetIndex,
+                missingElements: arrayMissingElements,
+                removeElements: arrayRemoveElements,
+                removeUndefined: arrayRemoveUndefined,
+              	parseAttribute: arrayObjectParseAttribute,
+            },
+          	comparators: {
+              	equal: equal,
+            },
             isNumber: isNumber,
-            objectArrayParseAttribute: objectArrayParseAttribute,
             objectFunctionEqualsElement: objectFunctionEqualsElement,
         }
     };
-
 
     engine.export(libModule);
 });

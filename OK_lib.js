@@ -1,7 +1,7 @@
 registerPlugin({
     name: 'OK_lib',
     engine: '>= 0.13.37',
-    version: '0.1',
+    version: '1.0',
     description: 'A lib that is OK. For other scripts to use.',
     author: 'Diesmon <dontmindme12@web.de> & Tuetchen || Smorrebrod || Cedrik <cedrik.paetz@gmail.com>',
     vars: [
@@ -9,7 +9,7 @@ registerPlugin({
             name: 'logLevel',
             title: 'Sets a global debug log level for all scripts that use this lib. The logs will be displayed in the instance logs.',
             type: 'select',
-            options: ['1 - Critical','2 - Error','3 - Missing items','4 - Debug','5 - Balls of steel']
+            options: ['1 - Critical','2 - Error','3 - Missing items','4 - Debug','5 - Ludicrous']
         }
     ]
 
@@ -25,16 +25,16 @@ registerPlugin({
     var helper = require('helpers');
 
     engine.notify('OK_lib loaded');
-
-    var backendEngine = engine.getBackend();
-
+	var backendEngine = engine.getBackend();
     var activeBotInstances = [];
-    engine.on('load', function() {
+
+    event.on('connect', function() {
        	var currentInstances = store.get('activeBotInstances');
       	if (!currentInstances){
           	currentInstances = [];
         }
-      	currentInstances.push(backend.getBotClientID());
+      	log("Registering as active Bot " + printObject(backend.getBotClient()), 5);
+      	currentInstances.push(backend.getBotClient().uid());
       	currentInstances = arrayCreateSet(currentInstances);
       	store.set('activeBotInstances', currentInstances);
     });
@@ -47,17 +47,16 @@ registerPlugin({
     * A chat hook for the native SinusBot !info && !help commands.
     **/
     event.on('chat', function(ev) {
-        if (ev.text == "!info" || "!help"){
+        if (ev.text == "!help" || ev.text == "!info"){
             ev.client.chat("This bot uses the OK_lib, which is a libary for basic script functions.");
         }
     });
 
     /**
-    * Logs a message to the Instance Log.
-    *
-    * @param {string} message The Log Message.
-    * @param {number} logLevel The Log Level of this Log Message.
-    **/
+     * Logs messages to the Sinusbot Webinterface instance console, depending on the set log level in the config
+     * @param  {String} message  The String to print
+     * @param  {Integer} logLevel log level of the message to check with the set log level
+     */
     function log(message, logLevel){
         if (config.logLevel >= 0){
             if (logLevel-1 <= config.logLevel){
@@ -66,12 +65,16 @@ registerPlugin({
         }
     }
 
+    /**
+     * Provides the active Bot instances running on the Sinusbot Installation [Important: All instances need to run the script]
+     * @return {Array[Client]} Returns all found Bot clients in a Array
+     */
     function getActiveBotInstances(){
         var currentInstances = store.get('activeBotInstances');
       	result = [];
       	newStore = [];
       	for (var element in currentInstances){
-          	var currentClient = Backend.getClientByUniqueID(currentInstances[element]);
+          	var currentClient = backend.getClientByUniqueID(currentInstances[element]);
           	if (currentClient){
               	log("getActiveBotInstances: Active Bot " + printObject(currentClient) + " found", 5);
               	newStore.push(currentInstances[element]);
@@ -88,83 +91,133 @@ registerPlugin({
   		Channel
   	*/
 
+    /**
+     * Returns the ID and the Name of a Channel as String
+     * @param  {Channel} channel The Channel
+     * @return {String}         String of Channel ID and Name
+     */
   	function channelToString(channel){
       	return ("["+channel.id()+": "+channel.name()+"]");
     }
 
   	/**
-    * Returns a List of all Channels matching the Name
-    *
-    * @param {String} channelName The Channels Name.
-    * @returns {Channel[]} The List of all Channels matching the given Name.
-    **/
-  	function channelGetChannelByName(channelName){
-        var result = [];
-        var channels = backend.getChannels();
-        for (var channel in channels){
-        	if (channels[channel].name() == channelName){
-              	result.push(channels[channel]);
+       * Returns a array of Channels which meet the provided criterias
+       * @param  {String} attribute The Attribute to search for. E.g. 'name' or 'id'
+       * @param  {String} value     The Value that should get compared with the Attribute
+       * @param  {Array[Channel]} channels  Optional: The Channel Searchpool. If not provided all Channels will get used [Not Optional if compare gets provided]
+       * @param  {Function} compare   Optional: A Function for how to compare the Value with the Attribute. If not provided Value and Attribute will get checked for equality
+       * @return {Array[Channel]}           The Channels that matches the criterias
+       */
+  	function channelGetChannels(attribute, value, channels, compare){
+      	if(!channels){
+          	log("channelGetChannels: Using all Channels", 5);
+        	channels = backend.getChannels();
+        }
+      	else{
+          	channels = arrayCreateArray(channels);
+        	log("channelGetChannels: Using Channels " + printObject(channels), 5);
+        }
+  		var result = [];
+      	for(var curChannel in channels){
+          	if(objectFunctionEqualsElement(channels[curChannel], attribute, value, compare)){
+            	result.push(channels[curChannel]);
+              	log("channelGetChannels: Found Channel " + printObject(channels[curChannel]), 5);
+            }
+        }
+      	return result;
+    }
+
+    /**
+     * Returns all Subchannels of a given Channel
+     * @param  {Channel} parentChannel The Channel to return the Subchannels of
+     * @return {Array[Channel]}               Array of all Subchannels from the given Channel
+     */
+    function channelGetSubchannels(parentChannel){
+  		var channels = backend.getChannels();
+  		var result = [];
+  		for (var curChannel in channels){
+          	curParentChannel = channels[curChannel].parent();
+        	if (curParentChannel && equal(curParentChannel.id(), parentChannel.id())){
+              	result.push(channels[curChannel]);
+              	log("channelGetSubchannels: Found Channel " + printObject(channels[curChannel]), 5);
             }
         }
         return result;
-    }
-
-  	/**
-    * Returns the Channel with the matching Name and the matching Parent Channel.
-    *
-    * @param {String} channelName The Channels Name.
-    * @param {number} parentID The Channel ID of the Parent.
-    * @returns {Channel} The matching Channel or null.
-    **/
-  	function channelGetChannelByNameAndParent(channelName, parentID){
-        var channels = backend.getChannels();
-        for (var channel in channels){
-        	if (channels[channel].name() == channelName && channels[channel].parent() && channels[channel].parent().id() == parentID){
-              	return channels[channel];
-            }
-        }
-        return null;
-    }
+	}
 
     /*
         Client
     */
 
+    /**
+     * Returns the ID, UID and Nick of a Client as a String
+     * @param  {Client} client
+     * @return {String}
+     */
   	function clientToString(client){
       	return ("["+client.id()+"/"+client.uid()+": "+client.nick()+"]");
     }
 
+    /**
+     * Returns the ID, UID and Nick of a Client as a TeamSpeak3 useable Client-URL String
+     * @param  {Client} client
+     * @return {String}
+     */
   	function clientToURLString(client){
       	return ("[URL=client://"+client.id()+"/"+client.uid()+"]"+client.nick()+"[/URL]");
     }
 
+    /**
+     * Compares two Clients against each other and decied if they are the same Client or not (Equal)
+     * @param  {Client} firstClient
+     * @param  {Client} secondClient
+     * @return {Boolean}              True or False, depending if the Clients are equal or not.
+     */
     function equalClientObjects(firstClient, secondClient){
         return firstClient.equals(secondClient);
     }
 
+    /**
+     * Filters a Client-array by another Client-array
+     * @param  {Array[Client]} clients The Clients
+     * @param  {Array[Client]} array   The Clients to filter out
+     * @return {Array[Client]}         The new Clients
+     */
     function clientFilterByClients(clients, array){
         return arrayRemoveElements(clients, array, equalClientObjects);
     }
 
-    function clientFilterByServergroups(clients, array){
+    /**
+     * Filters a Client-array by Servergroups
+     * @param  {Array[Client]} clients The Clients
+     * @param  {Array[Client]} array   The Servergroups for filtering Clients out of the have one of them
+     * @return {Array[Client]}         The new Clients
+     */
+    function clientFilterByServerGroups(clients, array){
         clients = arrayCreateArray(clients);
         if(client.length == 0){
-            log(" clientFilterByServergroup: Provided no client to filter for", 3);
+            log("clientFilterByServergroup: Provided no Client to filter for", 3);
             return;
         }
         result = [];
         for(var curClient in clients){
             if(!arrayContainsOne(arrayObjectParseAttribute(clients[curClient].getGroups(), id, true), array)){
                 result.push(clients[curClient]);
+              	log("clientFilterByServergroup: Found Client " + printObject(clients[curClient]), 5);
             }
         }
         return result;
     }
 
+    /**
+     * Parses Client Objects into String UIDs and returns a Array of UIDs
+     * @param  {Array[Client]} clients The Clients to parse
+     * @return {Array[String]}         Array of parsed UID Strings
+     */
     function clientParseUIDs(clients){
         clients = arrayCreateArray(clients);
         if(clients.length == 0){
-            log(" clientFilterByServergroup: Provided no servergroup to filter for", 3);
+            log("clientParseUIDs: Provided no Clients to parse", 3);
             return;
         }
         var result = [];
@@ -172,12 +225,20 @@ registerPlugin({
             result.push(clients[client].uid());
             log("clientsParseUIDs: Resolved UID '" + clients[client].uid() + "'", 5);
         }
-      	log("clientsParseUIDs: UIDs resolved: '" + result.length + "'", 4);
         return result;
     }
 
+    /**
+     * Parses UIDs to Client Object. Works only for UID owners that are currently online.
+     * @param  {Array[String]} UIDs A Array of UID Strings
+     * @return {Array[Client]}      Array of parsed Client Objects
+     */
     function clientParseClients(UIDs){
         UIDs = arrayCreateArray(UIDs);
+      	if(UIDs.length == 0){
+            log("clientParseClients: Provided no UIDs to parse", 3);
+            return;
+        }
         var result = [];
         for (var curUID in UIDs){
           	var client = backend.getClientByUID(UIDs[curUID]);
@@ -186,65 +247,106 @@ registerPlugin({
             	log("clientsParseClient: Resolved UID '" + UIDs[curUID] + "' to '" + printObject(client) + "'", 5);
             }
           	else{
-              	log("clientsParseClient: A client with the UID '" + UIDs[curUID] + "' could not be found on the server", 3);
+              	log("clientsParseClient: A client with the UID '" + UIDs[curUID] + "' could not be found on the server", 4);
             }
         }
-      	log("clientsParseClients: Clients resolved: '" + result.length + "'", 4);
         return result;
     }
 
 	/**
-    * Returns a array of clients by a full or part name match or by a UID or ID match
-    *
-    * @param {string} stringToParse The string to compare the clients attributes with.
-    * @param {boolean} partMatch A flag if the part matches should also count as match (Beware: first triggered partMatch will return the client)
-    * @param {boolean} caseSensitive A optional boolean flag to let the parser know if the string should be treated as Case-sensitive when it is set to true or Case-insensitive when it is set to false.
-    * @returns {Array} returns a array filled with client matches.
-    **/
-	function clientsSearchByAll(stringToParse, partMatch, caseSensitive){
-        var clients = backend.getClients();
+     * Searches for a Client by the provided String and returns the matches.
+     * @param  {String} stringToParse String to search for
+     * @param  {Boolean} partMatch     Optional: Flag for using Part matching. If not provided Attribute and Value will be checked for equality (==)[Not optional if the Case Sensitive flag was set]
+     * @param  {Boolean} caseSensitive Optional: Flag for using Case Sensitive search. If not provided Cases will be ignored [Not Optional if the Client Searchpool got provided]
+     * @param  {Array[Client]} clients       Optional: The Client Searchpool. If not provided all clients will get used
+     * @return {Array[Client] || Client}                A empty Array if nothing was found. A Client Object if only one matching Client was found or a Client Array if more than one matching Client was found.
+     */
+	function clientSearch(stringToParse, partMatch, caseSensitive, clients){
+      	if(!clients){
+          	log("clientSearch: Using all Clients", 5);
+        	clients = backend.getClients();
+      	}else{
+          	clients = arrayCreateArray(clients);
+          	log("clientSearch: Using Clients " + printObject(clients), 5);
+        }
       	var result = [];
-      	if(caseSensitive){
+      	if(!caseSensitive){
+          	log("clientSearch: Ignore Case", 5);
           	stringToParse = stringToParse.toLowerCase();
+        }else{
+        	log("clientSearch: Case Sensitive Search", 5);
         }
       	var compare = equal;
       	if (partMatch){
-          	compare = function(name, string){
-              	return name.indexOf(string) != -1;
-            };
+          	log("clientSearch: Using contains as comparator", 5);
+          	compare = contains;
+        }else{
+          	log("clientSearch: Using equal as comparator", 5);
         }
       	for(var client in clients){
           	clientName = clients[client].name();
-          	if(caseSensitive){
+          	if(!caseSensitive){
               	clientName = clientName.toLowerCase();
             }
           	if(compare(clientName, stringToParse)){
                 result.push(clients[client]);
-                log("clientsSearchByAll: Found a part match between '" + stringToParse + "' and '" + printObject(clients[client]) + "'", 5);
+                log("clientSearch: Found a part match between '" + stringToParse + "' and " + printObject(clients[client]), 5);
             }
             else if(clients[client].uid() == stringToParse){
                 result.push(clients[client]);
-                log("clientsSearchByAll: Found a UID match between '" + stringToParse + "' and '" + printObject(clients[client]) + "'", 5);
+                log("clientSearch: Found a UID match between '" + stringToParse + "' and " + printObject(clients[client]), 5);
             }
             else if(clients[client].id() == stringToParse){
                 result.push(clients[client]);
-                log("clientsSearchByAll: Found a ID match between '" + stringToParse + "' and '" + printObject(clients[client]) + "'", 5);
+                log("clientSearch: Found a ID match between '" + stringToParse + "' and " + printObject(clients[client]), 5);
             }
         }
       	if(result.length == 0){
-        	log("clientsSearchByAll: Results found: '" + result.length + "'", 4);
+        	log("clientSearch: Found no matching client", 4);
+            return result;
+        }else if(result.length == 1){
+            log("clientSearch: Found '1' matching client", 4);
+            return result[0];
         }
+        log("clientSearch: Found '" + result.length + "' matching clients", 4);
         return result;
+    }
+
+    /**
+     * Returns a Array of Clients which meet the provided criterias
+     * @param  {String} attribute String of the Attribute to check for
+     * @param  {String} value     The Value the Attribute should have
+     * @param  {Array[Client]} clients   A Client Searchpool
+     * @param  {Function} compare  A Compare Function that should be used for the Comparison, if not set 'equal' is used
+     * @return {Array[Client]}           The matching Clients
+     */
+  	function clientGetClients(attribute, value, clients, compare){
+      	if(!clients){
+          	log("clientGetClients: Using all Clients", 5);
+        	clients = backend.getClients();
+      	}else{
+      		clients = arrayCreateArray(clients);
+          	log("clientGetClients: Using Clients " + printObject(clients), 5);
+        }
+      	var result = [];
+      	for(var curClient in clients){
+          	if(objectFunctionEqualsElement(clients[curClient], attribute, value, compare)){
+            	log("clientGetClients: Found Client " + printObject(clients[curClient]), 5);
+              	result.push(clients[curClient]);
+            }
+        }
+      	return result;
     }
 
     /**
     * Checks if a Client is the Member of all Server Groups.
     *
-    * @param {Client} client The tested Client as a Client Object.
-    * @param {number[]} checkGroups The Groups that should be checked as an Array of GroupIDs.
-    * @returns {boolean} True if the Client is in all Groups, else False.
+    * @param {Client} client 	The tested Client as a Client Object.
+    * @param {Array[ServerGroup] || Array[Integer]} 	checkGroups The Groups that should be checked as an Array of GroupIDs.
+    * @returns {Boolean} 		True if the Client is in all Groups, else False.
     **/
     function clientServerGroupsIsMemberOfAll(client, checkGroups){
+      	checkGroups = serverGroupParseIDs(checkGroups);
         var serverGroups = serverGroupParseIDs(client.getServerGroups());
         return arrayContainsAll(serverGroups, checkGroups);
     }
@@ -253,10 +355,11 @@ registerPlugin({
     * Checks if a Client is the Member of one of the Server Groups.
     *
     * @param {Client} client The tested Client as a Client Object.
-    * @param {number[]} checkGroups The Groups that should be checked as an Array of GroupIDs.
-    * @returns {boolean} True if the Client is in one Group, else False.
+    * @param {Array[ServerGroup] || Array[Integer]} checkGroups The Groups that should be checked as an Array of GroupIDs.
+    * @returns {Boolean} True if the Client is in one Group, else False.
     **/
     function clientServerGroupsIsMemberOfOne(client, checkGroups){
+      	checkGroups = serverGroupParseIDs(checkGroups);
         var serverGroups = serverGroupParseIDs(client.getServerGroups());
         return arrayContainsOne(serverGroups, checkGroups);
     }
@@ -265,31 +368,45 @@ registerPlugin({
     * Checks if a Client is the Member of a Server Group.
     *
     * @param {Client} client The tested Client as a Client Object.
-    * @param {number} checkGroups The GroupID of the Group that should be checked.
-    * @returns {boolean} True if the Client is Member of the Server Group, else False.
+    * @param {ServerGroup || Integer} checkGroups The GroupID of the Group that should be checked.
+    * @returns {Boolean} True if the Client is Member of the Server Group, else False.
     **/
     function clientServerGroupsIsMemberOf(client, checkGroup){
+      	if (!isNumber(checkGroup)){
+          	log("clientServerGroupsIsMemberOf: Resolved the servergroup '" + printObject(checkGroup) + "' to the ID '" + checkGroup.id() + "'", 5);
+          	checkGroup = checkGroup.id();
+        }
         var serverGroups = serverGroupParseIDs(client.getServerGroups());
         return arrayContainsElement(serverGroups, checkGroup);
     }
 
+    /**
+     * [clientServerGroupAddToGroups description]
+     * @param  {Client} client Client to add ServerGroups to
+     * @param  {Array[ServerGroup] || Array[Integer]} groups The ServerGroups or groupIDs to add
+     */
     function clientServerGroupAddToGroups(client, groups){
         groups = arrayCreateArray(groups);
       	if(groups.length == 0){
-            log("clientServerGroupAddToGroups: Provided no group to add", 3);
+            log("clientServerGroupAddToGroups: Provided no Group to add", 3);
             return;
         }
         for (var curGroup in groups){
             if (!clientServerGroupsIsMemberOf(client, groups[curGroup])){
                 client.addToServerGroup(groups[curGroup]);
-                log("clientServerGroupAddToGroups: Client '" + printObject(client) + "' was added to the servergroup: '" + printObject(groups[curGroup]) + "'", 5);
+                log("clientServerGroupAddToGroups: Client '" + printObject(client) + "' was added to the servergroup " + printObject(groups[curGroup]), 5);
             }
             else {
-              	log("clientServerGroupAddToGroups: Client '" + printObject(client) + "' already has the servergroup '" + printObject(groups[curGroup]) + "'", 3);
+              	log("clientServerGroupAddToGroups: Client '" + printObject(client) + "' already has the servergroup " + printObject(groups[curGroup]), 4);
             }
         }
     }
 
+    /**
+     * Removes the Clients from the given ServerGroups
+     * @param  {Client} client	The Client to remove ServerGroups from
+     * @param  {Array[ServerGroup] || Array[Integer]} groups The ServerGroups or groupIDs that should be removed from the Client
+     */
     function clientServerGroupRemoveFromGroups(client, groups){
         groups = arrayCreateArray(groups);
         if(groups.length == 0){
@@ -299,10 +416,10 @@ registerPlugin({
         for (var curGroup in groups){
         	if (clientServerGroupsIsMemberOf(client, groups[curGroup])){
                 client.removeFromServerGroup(groups[curGroup]);
-                log("clientServerGroupRemoveFromGroups: Client '" + printObject(client) + "' was removed from the servergroup: '" + printObject(groups[curGroup]) +"'", 5);
+                log("clientServerGroupRemoveFromGroups: Client '" + printObject(client) + "' was removed from the servergroup " + printObject(groups[curGroup]), 5);
             }
             else {
-                log("clientServerGroupRemoveFromGroups: Client '" + printObject(client) + "' did not had the group '" + printObject(groups[curGroup]) + "'", 5);
+                log("clientServerGroupRemoveFromGroups: Client '" + printObject(client) + "' did not had the group " + printObject(groups[curGroup]), 4);
             }
         }
     }
@@ -316,51 +433,53 @@ registerPlugin({
     */
 
     /**
-     * [groupToString description]
-     * @param  {[type]} serverGroup [description]
-     * @return {[type]}             [description]
+     * Returns a String Representation of a Group
+     * @param  {Group} group
+     * @return {String}	A String Representation of the given Group
      */
-  	function groupToString(serverGroup){
-      	return ("["+serverGroup.id()+": "+serverGroup.name()+"]");
+  	function groupToString(group){
+      	return ("["+group.id()+": "+group.name()+"]");
     }
 
     /**
-     * [serverGroupParseIDs description]
-     * @param  {[type]} serverGroups [description]
-     * @return {[type]}              [description]
+     * Parses the groupIDs from a given Array of ServerGroups
+     * @param  {Array[ServerGroup]} serverGroups
+     * @return {Array[Integer]} Returns an Array containing the parsed groupIDs
      */
     function serverGroupParseIDs(serverGroups){
         serverGroups = arrayCreateArray(serverGroups);
-        if (isNumber(serverGroups[0])){
-            return serverGroups;
-        }
         var result = [];
         for (var serverGroup in serverGroups){
-            result.push(serverGroups[serverGroup].id());
-          	log("serverGroupParseIDs: Resolved the servergroup '" + printObject(serverGroups[serverGroup]) + "' to the ID '" + serverGroups[serverGroup].id() + "'", 5);
+          	if (isNumber(serverGroups[0])){
+              	result.push(serverGroups[serverGroup]);
+            }else{
+              result.push(serverGroups[serverGroup].id());
+              log("serverGroupParseIDs: Resolved the servergroup '" + printObject(serverGroups[serverGroup]) + "' to the ID '" + serverGroups[serverGroup].id() + "'", 5);
+            }
         }
         return result;
     }
 
     /**
-     * [serverGroupParseGroups description]
-     * @param  {[type]} groupIDs [description]
-     * @return {[type]}          [description]
+     * Parses the ServerGroups from a given Array of groupIDs
+     * @param  {Array[Integer]} groupIDs
+     * @return {Array[ServerGroup]} Returns an Array containing the parsed ServerGroups
      */
     function serverGroupParseGroups(groupIDs){
         groupIDs = arrayCreateArray(groupIDs);
-        if (!isNumber(groupIDs[0])){
-            return groupIDs;
-        }
         var result = [];
         for (var curID in groupIDs){
-          	var group = backend.getServerGroupByID(groupIDs[curID]);
-            if (group){
-                result.push(group);
-                log("serverGroupParseGroups: Resolved the ID '" + groupIDs[curID] + "' to the servergroup '" + printObject(group) + "'", 5);
-            }
-          	else{
-              	log("serverGroupParseGroups: A servergroup with the ID '" + groupIDs[curID] + "' was not found on the server", 2);
+          	if (!isNumber(groupIDs[curID])){
+              	result.push(groupIDs[curID]);
+            }else{
+              	var group = backend.getServerGroupByID(groupIDs[curID]);
+            	if (group){
+                	result.push(group);
+                	log("serverGroupParseGroups: Resolved the ID '" + groupIDs[curID] + "' to the servergroup " + printObject(group), 5);
+            	}
+          		else{
+              		log("serverGroupParseGroups: A servergroup with the ID '" + groupIDs[curID] + "' was not found on the server", 2);
+            	}
             }
         }
         return result;
@@ -371,12 +490,72 @@ registerPlugin({
     */
 
     /**
-     * [userToString description]
-     * @param  {[type]} user [description]
-     * @return {[type]}      [description]
+     * Returns a String Representation of a User
+     * @param  {User} user
+     * @return {String}	A String Representation of the given User
      */
     function userToString(user){
       	return ("["+user.id()+": "+user.name()+"]");
+    }
+
+    /**
+     * Checks if the Sinusbot User has the required Sinusbot Privileges
+     * @param  {User} user A Sinusbot User
+     * @param  {Integer} privileges The numerical value of the required Privileges
+     * @return {Boolean} Returns true if the Sinusbot User has the required Privileges
+     */
+  	function userHasPrivileges(user, privileges){
+      	var userPriv = user.privileges();
+      	if ((userPriv & privileges) == privileges){
+          	return true;
+        }
+      	return false;
+    }
+
+    /**
+     * Retrieves the Clients Sinusbot Privileges
+     * @param  {Client} client A Teamspeak Client
+     * @return {Integer}  Returns the Privileges as a numerical value
+     */
+  	function userGetClientPrivileges(client){
+      	var users = engine.getUsers();
+      	var privileges = 0;
+      	for (var userID in users){
+          	if (userIsClientUser(client, users[userID])){
+            	privileges = privileges | users[userID].privileges();
+            }
+        }
+      	return privileges;
+    }
+
+    /**
+     * Checks if the Client has the required Sinusbot Privileges
+     * @param  {Client} client  A Teamspeak Client
+     * @param  {Integer} privileges The numerical value of the required Privileges
+     * @return {Boolean} Returns true if the Client has the required Privileges
+     */
+  	function userClientHasPrivileges(client, privileges){
+      	var clientPrivileges = userGetClientPrivileges(client);
+      	return ((clientPrivileges & privileges) == privileges);
+    }
+
+    /**
+     * Checks if the Client has access to the given Sinusbot User
+     * @param  {Client} client A Teamspeak Client
+     * @param  {User} user A Sinusbot User
+     * @return {Boolean} Returns true if the User either has a matching UID or the Client is Member of the required ServerGroup
+     */
+	function userIsClientUser(client, user){
+      	if (user.tsUid() == client.uid()){
+          	log("userIsClientUser: "+printObject(client)+"-"+printObject(user)+": UID Match", 5);
+          	return true;
+        }
+      	if (clientServerGroupsIsMemberOf(client, user.tsGroupId())){
+          	log("userIsClientUser: "+printObject(client)+"-"+printObject(user)+": ServerGroup Match", 5);
+          	return true;
+        }else{
+          	return false;
+        }
     }
 
     /*
@@ -384,9 +563,9 @@ registerPlugin({
     */
 
     /**
-     * [trackToString description]
-     * @param  {[type]} track [description]
-     * @return {[type]}       [description]
+     * Returns a String Representation of a Track
+     * @param  {Track} track
+     * @return {String}	A String Representation of the given Track
      */
     function trackToString(track){
       	return ("["+track.artist()+": "+track.title()+"]");
@@ -397,9 +576,9 @@ registerPlugin({
     */
 
     /**
-     * [playlistToString description]
-     * @param  {[type]} playlist [description]
-     * @return {[type]}          [description]
+     * Returns a String Representation of a Playlist
+     * @param  {Playlist} playlist
+     * @return {String}	A String Representation of the given Playlist
      */
     function playlistToString(playlist){
       	return ("["+playlist.id()+": "+playlist.name()+"]");
@@ -409,21 +588,26 @@ registerPlugin({
         Helper
     */
 
+    /**
+     * Checks if an Object is null or undefined
+     * @param  {Object} element
+     * @return {Boolean} Returns true if the Object is null or undefined
+     */
     function empty(element){
-        if (typeof element === 'undefined' || !element){
+        if (!element || typeof element === 'undefined'){
             return true;
         }
         return false;
     }
 
     /**
-     * [printObject description]
-     * @param  {[type]} object [description]
-     * @return {[type]}        [description]
+     * Returns a String Representation of an Object
+     * @param  {Object} object
+     * @return {String}	A String Representation of the given Object
      */
     function printObject(object){
       	try{
-          	object.firstSeen();
+          	object.nick();
           	return clientToString(object);
         }catch(err){
           	try{
@@ -446,25 +630,29 @@ registerPlugin({
                                         object.getTracks();
                                         return playlistToString(object);
                                     }catch(err){
-                                          return ""+object;
+                                          if (Array.isArray(object)){
+                                          		return arrayToString(object);
+                                          }else{
+                                                return ""+object;
+                                          }
                                     }
                               }
                         }
                   }
-          	}
+            }
         }
     }
 
     /**
-     * [arrayToString description]
-     * @param  {[type]} array [description]
-     * @return {[type]}       [description]
+     * Returns a String Representation of an Array
+     * @param  {Array[Object]} array
+     * @return {String}	A String Representation of the given Array
      */
     function arrayToString(array){
       	var result = "[";
-      	for (var element in array){
-        	result += printObject(array[element]);
-          	if (element+1 < array.length){
+      	for (var i=0; i < array.length; i++){
+        	result += printObject(array[i]);
+          	if (i+1 < array.length){
               	result += ",";
             }
       	}
@@ -473,11 +661,11 @@ registerPlugin({
     }
 
     /**
-     * [arrayContainsAll description]
-     * @param  {[type]} array    [description]
-     * @param  {[type]} elements [description]
-     * @param  {[type]} compare  [description]
-     * @return {[type]}          [description]
+     * Checks if an Array contains all Elements of another given Array
+     * @param  {Array[Object]} array
+     * @param  {Array[Object]} elements The Elements to search for in the Array
+     * @param  {Function} compare  A Compare Function that should be used for the Comparison, if not set 'equal' is used
+     * @return {Boolean} Returns true if all Elements are contained in the given Array
      */
     function arrayContainsAll(array, elements, compare){
         if (arrayMissingElements(array, elements, compare).length > 0){
@@ -488,33 +676,31 @@ registerPlugin({
     }
 
     /**
-     * [arrayCombineArrays description]
-     * @param  {[type]} array    [description]
-     * @param  {[type]} elements [description]
-     * @return {[type]}          [description]
+     * Concatenates two Arrays
+     * @param  {Array[Object]} array
+     * @param  {Array[Object]} elements
+     * @return {Array[Object]} Returns a new Array containing all Elements of the two given Arrays
      */
     function arrayCombineArrays(array, elements){
         array = arrayCreateArray(array);
         elements = arrayCreateArray(elements);
         var result = [];
-        for(var arrayElement in array){
-            result.push(array[arrayElement]);
-            log("arrayCombineArrays: Added '" + printObject(array[arrayElement]) + "' from the first array into the combined one'", 5);
+        for(var i = 0; i < array.length; i++){
+            result.push(array[i]);
         }
-        for(var element in elements){
-            result.push(elements[element]);
-            log("arrayCombineArrays: Added '" + printObject(elements[element]) + "' from the second array into the combined one'", 5);
+        for(var j = 0; j < elements.length; j++){
+            result.push(elements[j]);
         }
-        log("arrayCombineArrays: The combined result has '" + result.length + "' entries now", 4);
+      	log("arrayCombineArrays: Found '" + result.length + "' Objects", 4);
         return result;
     }
 
     /**
-     * [arrayContainsElement description]
-     * @param  {[type]} array   [description]
-     * @param  {[type]} element [description]
-     * @param  {[type]} compare [description]
-     * @return {[type]}         [description]
+     * Checks if an Array contains the given Element
+     * @param  {Array[Object]} array
+     * @param  {Object} element
+     * @param  {Function} compare A Compare Function that should be used for the Comparison, if not set 'equal' is used
+     * @return {Boolean}  Returns true if the Element is contained in the Array
      */
     function arrayContainsElement(array, element, compare){
       	if (!compare){
@@ -529,11 +715,11 @@ registerPlugin({
     }
 
     /**
-     * [arrayContainsOne description]
-     * @param  {[type]} array    [description]
-     * @param  {[type]} elements [description]
-     * @param  {[type]} compare  [description]
-     * @return {[type]}          [description]
+     * Checks if an Array contains at least one Element of another given Array
+     * @param  {Array[Object]} array
+     * @param  {Array[Object]} elements The Elements to search for in the Array
+     * @param  {Function} compare  A Compare Function that should be used for the Comparison, if not set 'equal' is used
+     * @return {Boolean}  Returns true if at least one Element is contained in the given Array
      */
     function arrayContainsOne(array, elements, compare){
         for (var element in elements){
@@ -545,9 +731,9 @@ registerPlugin({
     }
 
     /**
-     * [arrayCreateArray description]
-     * @param  {[type]} element [description]
-     * @return {[type]}         [description]
+     * Creates an Array containing the given Element or returns immediately if an Array is given
+     * @param  {Array[Object] || Object} element
+     * @return {Array[Object]} An Array containing the given Elements
      */
     function arrayCreateArray(element){
         if (!Array.isArray(element)){
@@ -561,21 +747,21 @@ registerPlugin({
     }
 
     /**
-     * [arrayCreateSet description]
-     * @param  {[type]} array   [description]
-     * @param  {[type]} compare [description]
-     * @return {[type]}         [description]
+     * Creates a Set of the given Array, removing any Duplicates
+     * @param  {Array[Object]} array
+     * @param  {Function} compare A Compare Function that should be used for the Comparison, if not set 'equal' is used
+     * @return {Array[Object]}  The Set representation of the given Array
      */
-  	function arrayCreateSet(array, compare){
+    function arrayCreateSet(array, compare){
         var result = [];
-      	if (!Array.isArray(array)){
+    	if (!Array.isArray(array)){
             result.push(array);
             return result;
         }
         else{
-          	for (var element in array){
-              	if (!arrayContainsElement(result, array[element], compare)){
-                  	result.push(element);
+       	    for (var i = 0; i < array.length; i++){
+           	    if (!arrayContainsElement(result, array[i], compare)){
+               	    result.push(array[i]);
                 }
             }
             return result;
@@ -583,72 +769,69 @@ registerPlugin({
     }
 
     /**
-     * [arrayDifference description]
-     * @param  {[type]} array    [description]
-     * @param  {[type]} elements [description]
-     * @param  {[type]} compare  [description]
-     * @return {[type]}          [description]
+     * Returns the Elements that differ are contained in only one of the given Arrays
+     * @param  {Array[Object]} array
+     * @param  {Array[Object]} elements
+     * @param  {Function} compare A Compare Function that should be used for the Comparison, if not set 'equal' is used
+     * @return {Array[Object]}	An Array that contains the Elements that were only present in one of the Arrays
      */
     function arrayDifference(array, elements, compare){
         var result = [];
         for (var element in elements){
             if (!arrayContainsElement(array, elements[element], compare)){
                 result.push(elements[element]);
-                log("arrayDifference: Added '" + printObject(elements[element]) + "' into the resultarray", 5);
             }
         }
         for (var arrayElement in array){
             if (!arrayContainsElement(elements, array[arrayElement], compare)){
                 result.push(array[arrayElement]);
-                log("arrayDifference: Added '" + printObject(array[arrayElement]) + "' into the resultarray", 5);
             }
         }
-        log("arrayDifference: results found '" + result.length + "'", 4);
         return result;
     }
 
     /**
-     * [arrayGetIndex description]
-     * @param  {[type]} array   [description]
-     * @param  {[type]} element [description]
-     * @param  {[type]} compare [description]
-     * @return {[type]}         [description]
+     * Gets the Index of an Object in an Array or -1 if it is not contained
+     * @param  {Array[Object]} array
+     * @param  {Object} element
+     * @param  {Function} compare  A Compare Function that should be used for the Comparison, if not set 'equal' is used
+     * @return {Integer}         [description]
      */
     function arrayGetIndex(array, element, compare){
         if (!compare){
           	compare = equal;
         }
-        for (var arrayElement in array){
-            if (compare(array[arrayElement], element)){
-                return arrayElement;
+        for (var i = 0; i < array.length; i++){
+            if (compare(array[i], element)){
+                return i;
             }
         }
         return -1;
     }
 
     /**
-     * [arrayRemoveUndefined description]
-     * @param  {[type]} array [description]
-     * @return {[type]}       [description]
+     * Removes undefined and null entries from an Array
+     * @param  {Array[Object]} array
+     * @return {Array[Object]} A Copy of the Array with any undefined or null entries removed
      */
     function arrayRemoveUndefined(array){
         array = arrayCreateArray(array);
         var result = [];
-        for (var element in array){
-            if (!empty(array[element])){
-                result.push(array[element]);
+        for (var i = 0; i < array.length; i++){
+            if (!empty(array[i])){
+                result.push(array[i]);
             }
         }
-        log("arrayRemoveUndefined: Removed '" + (array.length - result.length) + "' undefined or null entries from the array", 5);
+        log("arrayRemoveUndefined: Removed '" + (array.length - result.length) + "' undefined or null entries from the array", 4);
         return result;
     }
 
     /**
-     * [arrayMissingElements description]
-     * @param  {[type]} array    [description]
-     * @param  {[type]} elements [description]
-     * @param  {[type]} compare  [description]
-     * @return {[type]}          [description]
+     * Returns the missing Elements in the Array
+     * @param  {Array[Object]} array
+     * @param  {Array[Object]} elements The Array that contains the Elements to search for
+     * @param  {Function} compare A Compare Function that should be used for the Comparison, if not set 'equal' is used
+     * @return {Array[Object]}  An Array containing the missing Elements
      */
     function arrayMissingElements(array, elements, compare){
         elements = arrayCreateArray(elements);
@@ -656,19 +839,18 @@ registerPlugin({
         for (var element in elements){
             if (!arrayContainsElement(array, elements[element], compare)){
                 result.push(elements[element]);
-                log("arrayMissingElements: Added '" + printObject(elements[element]) + "' into the resultlist", 5);
             }
         }
-        log("arrayMissingElements: results found '" + result.length + "'", 4);
+        log("arrayMissingElements: Found '" + result.length + "' missing entries in the arrays", 4);
         return result;
     }
 
     /**
-     * [arrayRemoveElements description]
-     * @param  {[type]} array    [description]
-     * @param  {[type]} elements [description]
-     * @param  {[type]} compare  [description]
-     * @return {[type]}          [description]
+     * Removes the Elements of one Array of another Array
+     * @param  {Array[Object]} array
+     * @param  {Array[Object]} elements	The Array that contains the Elements to remove
+     * @param  {Function} compare	A Compare Function that should be used for the Comparison, if not set 'equal' is used
+     * @return {Array}	A Copy of the Array that does not contain the removed Elements
      */
     function arrayRemoveElements(array, elements, compare){
         if (!compare){
@@ -677,11 +859,10 @@ registerPlugin({
         array = arrayCreateArray(array);
         elements = arrayCreateArray(elements);
         var result = [];
-        for(var arrayElement in array){
-            for(var element in elements){
-                if (!compare(array[arrayElement], elements[element])){
-                    result.push(array[arrayElement]);
-                    log("arrayRemoveElements: Added '" + printObject(array[arrayElement]) + "' into the resultlist", 5);
+        for(var i = 0; i < array.length; i++ ){
+            for(var j = 0; j < elements.length; j++){
+                if (!compare(array[i], elements[j])){
+                    result.push(array[i]);
                 }
             }
         }
@@ -690,30 +871,106 @@ registerPlugin({
     }
 
     /**
-     * [equal description]
-     * @param  {[type]} a [description]
-     * @param  {[type]} b [description]
-     * @return {[type]}   [description]
+     * Checks if a is equal b
+     * @param  {Object} a
+     * @param  {Object} b
+     * @return {Boolean}   Returns true when a is equal b
      */
   	function equal(a, b){
       	return (a == b);
     }
 
     /**
-     * [isNumber description]
-     * @param  {[type]}  number [description]
-     * @return {Boolean}        [description]
+     * Checks if a is not equal b
+     * @param  {Object} a
+     * @param  {Object} b
+     * @return {Boolean}   Returns true when a is not equal b
+     */
+  	function unequal(a, b){
+      	return (a != b);
+    }
+
+    /**
+     * Checks if a is greater b
+     * @param  {Object} a
+     * @param  {Object} b
+     * @return {Boolean}   Returns true when a is greater b
+     */
+  	function greater(a, b){
+      	return (a > b);
+    }
+
+    /**
+     * Checks if a is less b
+     * @param  {Object} a
+     * @param  {Object} b
+     * @return {Boolean}   Returns true when a is less b
+     */
+  	function less(a, b){
+      	return (a < b);
+    }
+
+    /**
+     * Checks if a is greater or equal b
+     * @param  {Object} a
+     * @param  {Object} b
+     * @return {Boolean}   Returns true when a is greater or equal b
+     */
+  	function greaterOrEqual(a, b){
+      	return (a >= b);
+    }
+
+    /**
+     * Checks if a is less or equal b
+     * @param  {Object} a
+     * @param  {Object} b
+     * @return {Boolean}   Returns true when a is less or equal b
+     */
+  	function lessOrEqual(a, b){
+      	return (a <= b);
+    }
+
+    /**
+     * Checks if one String is contained in another
+     * @param  {String} a
+     * @param  {String} b
+     * @return {Boolean}   Returns true when String b is contained in String a
+     */
+	function contains(a, b){
+      	if(a.indexOf(b) != -1){
+          	return true;
+        }
+      	return false;
+    }
+
+    /**
+     * Checks if one String is contained in another, ignoring the Case
+     * @param  {String} a
+     * @param  {String} b
+     * @return {Boolean}   Returns true when String b is contained in String a
+     */
+    function containsIgnoreCase(a, b){
+      	if(a.toLowerCase().indexOf(b.toLowerCase()) != -1){
+          	return true;
+        }
+      	return false;
+    }
+
+    /**
+     * Checks if the value is a Number
+     * @param  {Object}  number Object that should be checked
+     * @return {Boolean}        Returns true if the Object is a Number
      */
     function isNumber(number){
       	return !isNaN(number);
     }
 
     /**
-     * [arrayObjectParseAttribute description]
-     * @param  {[type]}  array      [description]
-     * @param  {[type]}  attribute  [description]
-     * @param  {Boolean} isFunction [description]
-     * @return {[type]}             [description]
+     * Parse an Array of Objects to an Array of a single chosen Properties
+     * @param  {Array[Object]}  array      Array to Parse
+     * @param  {String}  attribute  Name of the Property that should be parsed
+     * @param  {Boolean} isFunction Check when the Property is a function
+     * @return {Array[Object]}  Parsed Array
      */
     function arrayObjectParseAttribute(array, attribute, isFunction){
         array = arrayCreateArray(array);
@@ -721,23 +978,21 @@ registerPlugin({
         for (var object in array){
           	if (isFunction){
               	result.push(array[object][attribute]());
-            	log("arrayObjectParseAttribute: Parsed '" + array[object][attribute]() + "' into the resultlist", 5);
             }else{
             	result.push(array[object][attribute]);
-            	log("arrayObjectParseAttribute: Parsed '" + array[object][attribute]() + "' into the resultlist", 5);
             }
         }
-        log("arrayObjectParseAttribute: results found '" + result.length + "'", 4);
+        log("arrayObjectParseAttribute: Found '" + result.length + "' Objects", 4);
         return result;
     }
 
     /**
-     * [objectFunctionEqualsElement description]
-     * @param  {[type]} object   [description]
-     * @param  {[type]} property [description]
-     * @param  {[type]} element  [description]
-     * @param  {[type]} compare  [description]
-     * @return {[type]}          [description]
+     * Compares an objects property with a specific value
+     * @param  {Object} object   Object to check
+     * @param  {String} property Name of the Property that should be checked
+     * @param  {Object} element  Value that should be compared to the Property
+     * @param  {Function} compare  A Compare Function that should be used for the Comparison, if not set 'equal' is used
+     * @return {Boolean}   Returns the Value of the Comparison
      */
     function objectFunctionEqualsElement(object, property, element, compare){
       	if (!compare){
@@ -758,8 +1013,8 @@ registerPlugin({
 
         channel: {
           	toString: channelToString,
-            getByName: channelGetChannelByName,
-            getByNameAndParent: channelGetChannelByNameAndParent,
+            getChannels: channelGetChannels,
+            getSubchannels: channelGetSubchannels,
         },
 
         client: {
@@ -767,12 +1022,11 @@ registerPlugin({
           	toURLString: clientToURLString,
             equal: equalClientObjects,
             filterByClients: clientFilterByClients,
-            filterByServergroups: clientFilterByServergroups,
+            filterByServerGroups: clientFilterByServerGroups,
             toUIDs: clientParseUIDs,
           	parseFromUIDs: clientParseClients,
-            search: {
-                findAll: clientsSearchByAll,
-            },
+            getClients: clientGetClients,
+            search: clientSearch,
             serverGroups: {
                 isMemberOfGroup: clientServerGroupsIsMemberOf,
                 isMemberOfAll: clientServerGroupsIsMemberOfAll,
@@ -780,13 +1034,16 @@ registerPlugin({
                 addToGroups: clientServerGroupAddToGroups,
                 removeFromGroups: clientServerGroupRemoveFromGroups,
             },
+          	isAuthorized: clientServerGroupsIsMemberOfOne,
+          	hasPrivileges: userClientHasPrivileges,
+          	getPrivileges: userGetClientPrivileges,
         },
 
       	channelGroup: {
           	toString: groupToString,
         },
 
-        serverGroups: {
+        serverGroup: {
           	toString: groupToString,
             toIDs: serverGroupParseIDs,
             toGroups: serverGroupParseGroups,
@@ -794,6 +1051,28 @@ registerPlugin({
 
         user: {
 			toString: userToString,
+          	hasPrivileges: userHasPrivileges,
+          	getClientPrivileges: userGetClientPrivileges,
+          	isClientUser: userIsClientUser,
+          	privileges: {
+              	PRIV_LOGIN: 1,
+                PRIV_LIST_FILE: 2,
+                PRIV_UPLOAD_FILE: 4,
+                PRIV_DELETE_FILE: 8,
+                PRIV_EDIT_FILE: 16,
+                PRIV_CREATE_PLAYLIST: 32,
+                PRIV_DELETE_PLAYLIST: 64,
+                PRIV_ADDTO_PLAYLIST: 128,
+                PRIV_STARTSTOP: 256,
+                PRIV_EDITUSERS: 512,
+                PRIV_CHANGENICK: 1024,
+                PRIV_BROADCAST: 2048,
+                PRIV_PLAYBACK: 4096,
+                PRIV_ENQUEUE: 8192,
+                PRIV_ENQUEUENEXT: 16384,
+                PRIV_EDITBOT: 65536,
+                PRIV_EDITINSTANCE: 131072,
+            }
         },
 
       	track: {
@@ -804,25 +1083,33 @@ registerPlugin({
 			playlist: playlistToString,
         },
 
+        array: {
+            toString: arrayToString,
+            combineArrays: arrayCombineArrays,
+            containsAll: arrayContainsAll,
+            containsElement: arrayContainsElement,
+            containsOne: arrayContainsOne,
+            createArray: arrayCreateArray,
+            toSet: arrayCreateSet,
+            difference: arrayDifference,
+            getIndex: arrayGetIndex,
+            missingElements: arrayMissingElements,
+            removeElements: arrayRemoveElements,
+            removeUndefined: arrayRemoveUndefined,
+            parseAttribute: arrayObjectParseAttribute,
+        },
+
         helper: {
           	printObject: printObject,
-          	array: {
-              	toString: arrayToString,
-                combineArrays: arrayCombineArrays,
-                containsAll: arrayContainsAll,
-                containsElement: arrayContainsElement,
-                containsOne: arrayContainsOne,
-                createArray: arrayCreateArray,
-              	toSet: arrayCreateSet,
-                difference: arrayDifference,
-                getIndex: arrayGetIndex,
-                missingElements: arrayMissingElements,
-                removeElements: arrayRemoveElements,
-                removeUndefined: arrayRemoveUndefined,
-              	parseAttribute: arrayObjectParseAttribute,
-            },
-          	comparators: {
+          	comparator: {
               	equal: equal,
+              	unequal: unequal,
+              	greater: greater,
+              	less: less,
+              	greaterEqual: greaterOrEqual,
+              	lessEqual: lessOrEqual,
+              	contains: contains,
+                containsIgnoreCase: containsIgnoreCase,
             },
             isNumber: isNumber,
             objectFunctionEqualsElement: objectFunctionEqualsElement,

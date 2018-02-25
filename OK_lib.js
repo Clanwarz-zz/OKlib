@@ -67,7 +67,7 @@ registerPlugin({
 
     /**
      * Provides the active Bot instances running on the Sinusbot Installation [Important: All instances need to run the script]
-     * @return {Array[Client]} Returns all found Bot clients in a Array
+     * @return {Client[]} Returns all found Bot clients in a Array
      */
     function getActiveBotInstances(){
         var currentInstances = store.get('activeBotInstances');
@@ -104,9 +104,9 @@ registerPlugin({
        * Returns a array of Channels which meet the provided criterias
        * @param  {String} attribute The Attribute to search for. E.g. 'name' or 'id'
        * @param  {String} value     The Value that should get compared with the Attribute
-       * @param  {Array[Channel]} channels  Optional: The Channel Searchpool. If not provided all Channels will get used [Not Optional if compare gets provided]
+       * @param  {Channel[]} channels  Optional: The Channel Searchpool. If not provided all Channels will get used [Not Optional if compare gets provided]
        * @param  {Function} compare   Optional: A Function for how to compare the Value with the Attribute. If not provided Value and Attribute will get checked for equality
-       * @return {Array[Channel]}           The Channels that matches the criterias
+       * @return {Channel[]}           The Channels that matches the criterias
        */
   	function channelGetChannels(attribute, value, channels, compare){
       	if(!channels){
@@ -130,7 +130,7 @@ registerPlugin({
     /**
      * Returns all Subchannels of a given Channel
      * @param  {Channel} parentChannel The Channel to return the Subchannels of
-     * @return {Array[Channel]}               Array of all Subchannels from the given Channel
+     * @return {Channel[]}               Array of all Subchannels from the given Channel
      */
     function channelGetSubchannels(parentChannel){
   		var channels = backend.getChannels();
@@ -179,9 +179,9 @@ registerPlugin({
 
     /**
      * Filters a Client-array by another Client-array
-     * @param  {Array[Client]} clients The Clients
-     * @param  {Array[Client]} array   The Clients to filter out
-     * @return {Array[Client]}         The new Clients
+     * @param  {Client[]} clients The Clients
+     * @param  {Client[]} array   The Clients to filter out
+     * @return {Client[]}         The new Clients
      */
     function clientFilterByClients(clients, array){
         return arrayRemoveElements(clients, array, equalClientObjects);
@@ -189,9 +189,9 @@ registerPlugin({
 
     /**
      * Filters a Client-array by Servergroups
-     * @param  {Array[Client]} clients The Clients
-     * @param  {Array[Client]} array   The Servergroups for filtering Clients out of the have one of them
-     * @return {Array[Client]}         The new Clients
+     * @param  {Client[]} clients The Clients
+     * @param  {Client[]} array   The Servergroups for filtering Clients out of the have one of them
+     * @return {Client[]}         The new Clients
      */
     function clientFilterByServerGroups(clients, array){
         clients = arrayCreateArray(clients);
@@ -211,8 +211,8 @@ registerPlugin({
 
     /**
      * Parses Client Objects into String UIDs and returns a Array of UIDs
-     * @param  {Array[Client]} clients The Clients to parse
-     * @return {Array[String]}         Array of parsed UID Strings
+     * @param  {Client[]} clients The Clients to parse
+     * @return {String[]}         Array of parsed UID Strings
      */
     function clientParseUIDs(clients){
         clients = arrayCreateArray(clients);
@@ -230,8 +230,8 @@ registerPlugin({
 
     /**
      * Parses UIDs to Client Object. Works only for UID owners that are currently online.
-     * @param  {Array[String]} UIDs A Array of UID Strings
-     * @return {Array[Client]}      Array of parsed Client Objects
+     * @param  {String[]} UIDs A Array of UID Strings
+     * @return {Client[]}      Array of parsed Client Objects
      */
     function clientParseClients(UIDs){
         UIDs = arrayCreateArray(UIDs);
@@ -258,8 +258,8 @@ registerPlugin({
      * @param  {String} stringToParse String to search for
      * @param  {Boolean} partMatch     Optional: Flag for using Part matching. If not provided Attribute and Value will be checked for equality (==)[Not optional if the Case Sensitive flag was set]
      * @param  {Boolean} caseSensitive Optional: Flag for using Case Sensitive search. If not provided Cases will be ignored [Not Optional if the Client Searchpool got provided]
-     * @param  {Array[Client]} clients       Optional: The Client Searchpool. If not provided all clients will get used
-     * @return {Array[Client] || Client}                A empty Array if nothing was found. A Client Object if only one matching Client was found or a Client Array if more than one matching Client was found.
+     * @param  {Client[]} clients       Optional: The Client Searchpool. If not provided all clients will get used
+     * @return {Client[] || Client}                A empty Array if nothing was found. A Client Object if only one matching Client was found or a Client Array if more than one matching Client was found.
      */
 	function clientSearch(stringToParse, partMatch, caseSensitive, clients){
       	if(!clients){
@@ -316,9 +316,9 @@ registerPlugin({
      * Returns a Array of Clients which meet the provided criterias
      * @param  {String} attribute String of the Attribute to check for
      * @param  {String} value     The Value the Attribute should have
-     * @param  {Array[Client]} clients   A Client Searchpool
+     * @param  {Client[]} clients   A Client Searchpool
      * @param  {Function} compare  A Compare Function that should be used for the Comparison, if not set 'equal' is used
-     * @return {Array[Client]}           The matching Clients
+     * @return {Client[]}           The matching Clients
      */
   	function clientGetClients(attribute, value, clients, compare){
       	if(!clients){
@@ -342,7 +342,7 @@ registerPlugin({
     * Checks if a Client is the Member of all Server Groups.
     *
     * @param {Client} client 	The tested Client as a Client Object.
-    * @param {Array[ServerGroup] || Array[Integer]} 	checkGroups The Groups that should be checked as an Array of GroupIDs.
+    * @param {ServerGroup[] || Integer[]} 	checkGroups The Groups that should be checked as an Array of GroupIDs.
     * @returns {Boolean} 		True if the Client is in all Groups, else False.
     **/
     function clientServerGroupsIsMemberOfAll(client, checkGroups){
@@ -355,7 +355,7 @@ registerPlugin({
     * Checks if a Client is the Member of one of the Server Groups.
     *
     * @param {Client} client The tested Client as a Client Object.
-    * @param {Array[ServerGroup] || Array[Integer]} checkGroups The Groups that should be checked as an Array of GroupIDs.
+    * @param {ServerGroup[] || Integer[]} checkGroups The Groups that should be checked as an Array of GroupIDs.
     * @returns {Boolean} True if the Client is in one Group, else False.
     **/
     function clientServerGroupsIsMemberOfOne(client, checkGroups){
@@ -383,7 +383,7 @@ registerPlugin({
     /**
      * [clientServerGroupAddToGroups description]
      * @param  {Client} client Client to add ServerGroups to
-     * @param  {Array[ServerGroup] || Array[Integer]} groups The ServerGroups or groupIDs to add
+     * @param  {ServerGroup[] || Integer[]} groups The ServerGroups or groupIDs to add
      */
     function clientServerGroupAddToGroups(client, groups){
         groups = arrayCreateArray(groups);
@@ -405,7 +405,7 @@ registerPlugin({
     /**
      * Removes the Clients from the given ServerGroups
      * @param  {Client} client	The Client to remove ServerGroups from
-     * @param  {Array[ServerGroup] || Array[Integer]} groups The ServerGroups or groupIDs that should be removed from the Client
+     * @param  {ServerGroup[] || Integer[]} groups The ServerGroups or groupIDs that should be removed from the Client
      */
     function clientServerGroupRemoveFromGroups(client, groups){
         groups = arrayCreateArray(groups);
@@ -443,8 +443,8 @@ registerPlugin({
 
     /**
      * Parses the groupIDs from a given Array of ServerGroups
-     * @param  {Array[ServerGroup]} serverGroups
-     * @return {Array[Integer]} Returns an Array containing the parsed groupIDs
+     * @param  {ServerGroup[]} serverGroups
+     * @return {Integer[]} Returns an Array containing the parsed groupIDs
      */
     function serverGroupParseIDs(serverGroups){
         serverGroups = arrayCreateArray(serverGroups);
@@ -462,8 +462,8 @@ registerPlugin({
 
     /**
      * Parses the ServerGroups from a given Array of groupIDs
-     * @param  {Array[Integer]} groupIDs
-     * @return {Array[ServerGroup]} Returns an Array containing the parsed ServerGroups
+     * @param  {Integer[]} groupIDs
+     * @return {ServerGroup[]} Returns an Array containing the parsed ServerGroups
      */
     function serverGroupParseGroups(groupIDs){
         groupIDs = arrayCreateArray(groupIDs);
@@ -645,7 +645,7 @@ registerPlugin({
 
     /**
      * Returns a String Representation of an Array
-     * @param  {Array[Object]} array
+     * @param  {Object[]} array
      * @return {String}	A String Representation of the given Array
      */
     function arrayToString(array){
@@ -662,8 +662,8 @@ registerPlugin({
 
     /**
      * Checks if an Array contains all Elements of another given Array
-     * @param  {Array[Object]} array
-     * @param  {Array[Object]} elements The Elements to search for in the Array
+     * @param  {Object[]} array
+     * @param  {Object[]} elements The Elements to search for in the Array
      * @param  {Function} compare  A Compare Function that should be used for the Comparison, if not set 'equal' is used
      * @return {Boolean} Returns true if all Elements are contained in the given Array
      */
@@ -677,9 +677,9 @@ registerPlugin({
 
     /**
      * Concatenates two Arrays
-     * @param  {Array[Object]} array
-     * @param  {Array[Object]} elements
-     * @return {Array[Object]} Returns a new Array containing all Elements of the two given Arrays
+     * @param  {Object[]} array
+     * @param  {Object[]} elements
+     * @return {Object[]} Returns a new Array containing all Elements of the two given Arrays
      */
     function arrayCombineArrays(array, elements){
         array = arrayCreateArray(array);
@@ -697,7 +697,7 @@ registerPlugin({
 
     /**
      * Checks if an Array contains the given Element
-     * @param  {Array[Object]} array
+     * @param  {Object[]} array
      * @param  {Object} element
      * @param  {Function} compare A Compare Function that should be used for the Comparison, if not set 'equal' is used
      * @return {Boolean}  Returns true if the Element is contained in the Array
@@ -716,8 +716,8 @@ registerPlugin({
 
     /**
      * Checks if an Array contains at least one Element of another given Array
-     * @param  {Array[Object]} array
-     * @param  {Array[Object]} elements The Elements to search for in the Array
+     * @param  {Object[]} array
+     * @param  {Object[]} elements The Elements to search for in the Array
      * @param  {Function} compare  A Compare Function that should be used for the Comparison, if not set 'equal' is used
      * @return {Boolean}  Returns true if at least one Element is contained in the given Array
      */
@@ -732,8 +732,8 @@ registerPlugin({
 
     /**
      * Creates an Array containing the given Element or returns immediately if an Array is given
-     * @param  {Array[Object] || Object} element
-     * @return {Array[Object]} An Array containing the given Elements
+     * @param  {Object[] || Object} element
+     * @return {Object[]} An Array containing the given Elements
      */
     function arrayCreateArray(element){
         if (!Array.isArray(element)){
@@ -748,9 +748,9 @@ registerPlugin({
 
     /**
      * Creates a Set of the given Array, removing any Duplicates
-     * @param  {Array[Object]} array
+     * @param  {Object[]} array
      * @param  {Function} compare A Compare Function that should be used for the Comparison, if not set 'equal' is used
-     * @return {Array[Object]}  The Set representation of the given Array
+     * @return {Object[]}  The Set representation of the given Array
      */
     function arrayCreateSet(array, compare){
         var result = [];
@@ -770,10 +770,10 @@ registerPlugin({
 
     /**
      * Returns the Elements that differ are contained in only one of the given Arrays
-     * @param  {Array[Object]} array
-     * @param  {Array[Object]} elements
+     * @param  {Object[]} array
+     * @param  {Object[]} elements
      * @param  {Function} compare A Compare Function that should be used for the Comparison, if not set 'equal' is used
-     * @return {Array[Object]}	An Array that contains the Elements that were only present in one of the Arrays
+     * @return {Object[]}	An Array that contains the Elements that were only present in one of the Arrays
      */
     function arrayDifference(array, elements, compare){
         var result = [];
@@ -792,7 +792,7 @@ registerPlugin({
 
     /**
      * Gets the Index of an Object in an Array or -1 if it is not contained
-     * @param  {Array[Object]} array
+     * @param  {Object[]} array
      * @param  {Object} element
      * @param  {Function} compare  A Compare Function that should be used for the Comparison, if not set 'equal' is used
      * @return {Integer}         [description]
@@ -811,8 +811,8 @@ registerPlugin({
 
     /**
      * Removes undefined and null entries from an Array
-     * @param  {Array[Object]} array
-     * @return {Array[Object]} A Copy of the Array with any undefined or null entries removed
+     * @param  {Object[]} array
+     * @return {Object[]} A Copy of the Array with any undefined or null entries removed
      */
     function arrayRemoveUndefined(array){
         array = arrayCreateArray(array);
@@ -828,10 +828,10 @@ registerPlugin({
 
     /**
      * Returns the missing Elements in the Array
-     * @param  {Array[Object]} array
-     * @param  {Array[Object]} elements The Array that contains the Elements to search for
+     * @param  {Object[]} array
+     * @param  {Object[]} elements The Array that contains the Elements to search for
      * @param  {Function} compare A Compare Function that should be used for the Comparison, if not set 'equal' is used
-     * @return {Array[Object]}  An Array containing the missing Elements
+     * @return {Object[]}  An Array containing the missing Elements
      */
     function arrayMissingElements(array, elements, compare){
         elements = arrayCreateArray(elements);
@@ -847,8 +847,8 @@ registerPlugin({
 
     /**
      * Removes the Elements of one Array of another Array
-     * @param  {Array[Object]} array
-     * @param  {Array[Object]} elements	The Array that contains the Elements to remove
+     * @param  {Object[]} array
+     * @param  {Object[]} elements	The Array that contains the Elements to remove
      * @param  {Function} compare	A Compare Function that should be used for the Comparison, if not set 'equal' is used
      * @return {Array}	A Copy of the Array that does not contain the removed Elements
      */
@@ -967,10 +967,10 @@ registerPlugin({
 
     /**
      * Parse an Array of Objects to an Array of a single chosen Properties
-     * @param  {Array[Object]}  array      Array to Parse
+     * @param  {Object[]}  array      Array to Parse
      * @param  {String}  attribute  Name of the Property that should be parsed
      * @param  {Boolean} isFunction Check when the Property is a function
-     * @return {Array[Object]}  Parsed Array
+     * @return {Object[]}  Parsed Array
      */
     function arrayObjectParseAttribute(array, attribute, isFunction){
         array = arrayCreateArray(array);

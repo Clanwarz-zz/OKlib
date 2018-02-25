@@ -259,7 +259,7 @@ registerPlugin({
      * @param  {Boolean} partMatch     Optional: Flag for using Part matching. If not provided Attribute and Value will be checked for equality (==)[Not optional if the Case Sensitive flag was set]
      * @param  {Boolean} caseSensitive Optional: Flag for using Case Sensitive search. If not provided Cases will be ignored [Not Optional if the Client Searchpool got provided]
      * @param  {Client[]} clients       Optional: The Client Searchpool. If not provided all clients will get used
-     * @return {Client[] || Client}                A empty Array if nothing was found. A Client Object if only one matching Client was found or a Client Array if more than one matching Client was found.
+     * @return {Client[], Client}                A empty Array if nothing was found. A Client Object if only one matching Client was found or a Client Array if more than one matching Client was found.
      */
 	function clientSearch(stringToParse, partMatch, caseSensitive, clients){
       	if(!clients){
@@ -342,7 +342,7 @@ registerPlugin({
     * Checks if a Client is the Member of all Server Groups.
     *
     * @param {Client} client 	The tested Client as a Client Object.
-    * @param {ServerGroup[] || Integer[]} 	checkGroups The Groups that should be checked as an Array of GroupIDs.
+    * @param {ServerGroup[], Integer[]} 	checkGroups The Groups that should be checked as an Array of GroupIDs.
     * @returns {Boolean} 		True if the Client is in all Groups, else False.
     **/
     function clientServerGroupsIsMemberOfAll(client, checkGroups){
@@ -355,7 +355,7 @@ registerPlugin({
     * Checks if a Client is the Member of one of the Server Groups.
     *
     * @param {Client} client The tested Client as a Client Object.
-    * @param {ServerGroup[] || Integer[]} checkGroups The Groups that should be checked as an Array of GroupIDs.
+    * @param {ServerGroup[], Integer[]} checkGroups The Groups that should be checked as an Array of GroupIDs.
     * @returns {Boolean} True if the Client is in one Group, else False.
     **/
     function clientServerGroupsIsMemberOfOne(client, checkGroups){
@@ -368,7 +368,7 @@ registerPlugin({
     * Checks if a Client is the Member of a Server Group.
     *
     * @param {Client} client The tested Client as a Client Object.
-    * @param {ServerGroup || Integer} checkGroups The GroupID of the Group that should be checked.
+    * @param {ServerGroup, Integer} checkGroups The GroupID of the Group that should be checked.
     * @returns {Boolean} True if the Client is Member of the Server Group, else False.
     **/
     function clientServerGroupsIsMemberOf(client, checkGroup){
@@ -383,7 +383,7 @@ registerPlugin({
     /**
      * [clientServerGroupAddToGroups description]
      * @param  {Client} client Client to add ServerGroups to
-     * @param  {ServerGroup[] || Integer[]} groups The ServerGroups or groupIDs to add
+     * @param  {ServerGroup[], Integer[]} groups The ServerGroups or groupIDs to add
      */
     function clientServerGroupAddToGroups(client, groups){
         groups = arrayCreateArray(groups);
@@ -405,7 +405,7 @@ registerPlugin({
     /**
      * Removes the Clients from the given ServerGroups
      * @param  {Client} client	The Client to remove ServerGroups from
-     * @param  {ServerGroup[] || Integer[]} groups The ServerGroups or groupIDs that should be removed from the Client
+     * @param  {ServerGroup[], Integer[]} groups The ServerGroups or groupIDs that should be removed from the Client
      */
     function clientServerGroupRemoveFromGroups(client, groups){
         groups = arrayCreateArray(groups);
@@ -732,7 +732,7 @@ registerPlugin({
 
     /**
      * Creates an Array containing the given Element or returns immediately if an Array is given
-     * @param  {Object[] || Object} element
+     * @param  {Object[], Object} element
      * @return {Object[]} An Array containing the given Elements
      */
     function arrayCreateArray(element){

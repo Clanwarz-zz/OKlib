@@ -732,7 +732,7 @@ registerPlugin({
 
     /**
      * Creates an Array containing the given Element or returns immediately if an Array is given
-     * @param  {Object[], Object} element
+     * @param  {Object[] | Object} element
      * @return {Object[]} An Array containing the given Elements
      */
     function arrayCreateArray(element){

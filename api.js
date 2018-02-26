@@ -158,6 +158,130 @@ class channelGroup {
     toString(channelGroup) { }
 }
 /**
+ * @mixin client
+ */
+class client {
+    /**
+     * Returns a String Representation of a Client
+     * @param  {Client} client
+     * @return {String}	A String Representation of the given Client
+     */
+    toString(client) { }
+    /**
+     * Returns a Teamspeak URL String of a Client
+     * @param  {Client} client
+     * @return {String}	A Teamspeak URL String of the given Client
+     */
+    toURLString(client) { }
+    /**
+     * Compares two Clients against each other and decied if they are the same Client or not (Equal)
+     * @param  {Client} a
+     * @param  {Client} b
+     * @return {Boolean} Returns true if the Clients are equal.
+     */
+    equal(a, b) { }
+    /**
+     * Filters a Client-array by another Client-array
+     * @param  {Client[]} clients The Clients
+     * @param  {Client[]} array   The Clients to filter out
+     * @return {Client[]}         The new Clients
+     */
+    filterByClients(clients, array) { }
+    /**
+     * Filters a Client-array by Servergroups
+     * @param  {Client[]} clients The Clients
+     * @param  {Client[]} array   The Servergroups for filtering Clients out of the have one of them
+     * @return {Client[]}         The new Clients
+     */
+    filterByServerGroups(clients, array) { }
+    /**
+     * Parses Client Objects into String UIDs and returns a Array of UIDs
+     * @param  {Client[]} clients The Clients to parse
+     * @return {String[]}         Array of parsed UID Strings
+     */
+    toUIDs(clients) { }
+    /**
+     * Parses UIDs to Client Object. Works only for UID owners that are currently online.
+     * @param  {String[]} uids An Array of UID Strings
+     * @return {Client[]}    Returns an Array of parsed Client Objects
+     */
+    parseFromUIDs(uids) { }
+    /**
+     * Returns a Array of Clients which meet the provided criterias
+     * @param  {String} attribute String of the Attribute to check for
+     * @param  {String} value     The Value the Attribute should have
+     * @param  {Client[]} clients   A Client Searchpool
+     * @param  {Function} compare  A Compare Function that should be used for the Comparison, if not set 'equal' is used
+     * @return {Client[]}           The matching Clients
+     */
+    getClients(attribute, value, clients, compare) { }
+    /**
+     * Searches for a Client by the provided String and returns the matches.
+     * @param  {String} stringToParse String to search for
+     * @param  {Boolean} partMatch     Optional: Flag for using Part matching. If not provided Attribute and Value will be checked for equality (==)[Not optional if the Case Sensitive flag was set]
+     * @param  {Boolean} caseSensitive Optional: Flag for using Case Sensitive search. If not provided Cases will be ignored [Not Optional if the Client Searchpool got provided]
+     * @param  {Client[]} clients       Optional: The Client Searchpool. If not provided all clients will get used
+     * @return {Client[] | Client}                A empty Array if nothing was found. A Client Object if only one matching Client was found or a Client Array if more than one matching Client was found.
+     */
+    search(stringToParse, partMatch, caseSensitive, clients) { }
+    /**
+    * Checks if a Client is the Member of one of the Server Groups.
+    *
+    * @param {Client} client The tested Client as a Client Object.
+    * @param {ServerGroup[] | Integer[]} checkGroups The Groups that should be checked as an Array of GroupIDs.
+    * @returns {Boolean} True if the Client is in one Group, else False.
+    **/
+    isAuthorized(client, checkGroups) { }
+    /**
+     * Checks if the Client has the required Sinusbot Privileges
+     * @param  {Client} client  A Teamspeak Client
+     * @param  {Integer} privileges The numerical value of the required Privileges
+     * @return {Boolean} Returns true if the Client has the required Privileges
+     */
+    hasPrivileges(client, privileges) { }
+    /**
+     * Retrieves the Clients Sinusbot Privileges
+     * @param  {Client} client A Teamspeak Client
+     * @return {Integer}  Returns the Privileges as a numerical value
+     */
+    getPrivileges(client) { }
+    /**
+    * Checks if a Client is the Member of a Server Group.
+    *
+    * @param {Client} client The tested Client as a Client Object.
+    * @param {ServerGroup | Integer} checkGroup The GroupID of the Group that should be checked.
+    * @returns {Boolean} True if the Client is Member of the Server Group, else False.
+    **/
+    isMemberOfGroup(client, checkGroup) { }
+    /**
+    * Checks if a Client is the Member of at least one of the Server Groups.
+    *
+    * @param {Client} client The tested Client as a Client Object.
+    * @param {ServerGroup[] | Integer[]} checkGroups The Groups that should be checked as an Array of GroupIDs.
+    * @returns {Boolean} True if the Client is in at least one Group, else False.
+    **/
+    isMemberOfOne(client, checkGroups) { }
+    /**
+    * Checks if a Client is the Member of all of the Server Groups.
+    *
+    * @param {Client} client The tested Client as a Client Object.
+    * @param {ServerGroup[] | Integer[]} checkGroups The Groups that should be checked as an Array of GroupIDs.
+    * @returns {Boolean} True if the Client is in all Groups, else False.
+    **/mberOfAll(client, checkGroups) { }
+    /**
+     * Adds the Client to the given ServerGroups
+     * @param  {Client} client
+     * @param  {ServerGroup[] | Integer[]} groups The ServerGroups or groupIDs to add
+     */
+    addToGroups(client, groups) { }
+    /**
+     * Removes the Client from the given ServerGroups
+     * @param  {Client} client
+     * @param  {ServerGroup[] | Integer[]} groups The ServerGroups or groupIDs that should be removed from the Client
+     */
+    removeFromGroups(client, groups) { }
+}
+/**
  * @mixin comparator
  */
 class comparator {
@@ -229,10 +353,22 @@ class general {
      */
     log(message, logLevel) { }
     /**
-     * Provides the active Bot instances running on the Sinusbot Installation [Important: All instances need to run the script]
+     * Provides the active Bot instances running on the Sinusbot Installation [Important: All instances need to run the script and have to be connected to the same server]
      * @return {Client[]} Returns all found Bot clients in a Array
      */
     getBots() { }
+    /**
+     * Checks the current version of OKlib
+     * @param  {String} wantedVersion The OKlib version your script needs. Provided for example as "1.0.0"
+     * @return {Boolean}  Returns true if the installed version is newer
+     */
+    function checkVersion(wantedVersion){ }
+    
+    /**
+     * Not Implemented Yet
+     * TODO: All
+     */
+    function checkForUpdates(){ }
 }
 /**
  * @mixin helper

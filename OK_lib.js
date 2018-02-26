@@ -2,6 +2,7 @@ registerPlugin({
     name: 'OK_lib',
     engine: '>= 0.13.37',
     version: '1.0.1',
+    autorun: true,
     description: 'A lib that is OK. For other scripts to use.',
     author: 'Tuetchen || Smorrebrod || Cedrik <cedrik.paetz@gmail.com> & Diesmon || Dimos <dontmindme12@web.de>',
     vars: [
@@ -28,7 +29,7 @@ registerPlugin({
     var backendEngine = engine.getBackend();
     var activeBotInstances = [];
 
-    var version = [1,0,0];
+    var version = '1.0.1';
 
     event.on('connect', function() {
         var currentInstances = store.get('activeBotInstances');
@@ -53,6 +54,22 @@ registerPlugin({
             ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/ok-library.322/]OKlib[https://forum.sinusbot.com/resources/ok-library.322/], which is a libary for basic script functions.");
         }
     });
+    
+    /**
+     * Checks the current version of OKlib
+     * @param  {String} wantedVersion The OKlib version your script needs. Provided for example as "1.0.0"
+     * @return {Boolean}  Returns true if the installed version is newer
+     */
+    function checkVersion(wantedVersion){
+        return version >= wantedVersion;
+    }
+    
+    /**
+     * TODO: All
+     */
+    function checkForUpdates(){
+        log('Not Implemented Yet',2);
+    }
 
     /**
      * Logs messages to the Sinusbot Webinterface instance console, depending on the set log level in the config
@@ -232,8 +249,8 @@ registerPlugin({
 
     /**
      * Parses UIDs to Client Object. Works only for UID owners that are currently online.
-     * @param  {String[]} UIDs A Array of UID Strings
-     * @return {Client[]}      Array of parsed Client Objects
+     * @param  {String[]} UIDs An Array of UID Strings
+     * @return {Client[]}    Returns an Array of parsed Client Objects
      */
     function clientParseClients(UIDs){
         UIDs = arrayCreateArray(UIDs);
@@ -370,7 +387,7 @@ registerPlugin({
     * Checks if a Client is the Member of a Server Group.
     *
     * @param {Client} client The tested Client as a Client Object.
-    * @param {ServerGroup | Integer} checkGroups The GroupID of the Group that should be checked.
+    * @param {ServerGroup | Integer} checkGroup The GroupID of the Group that should be checked.
     * @returns {Boolean} True if the Client is Member of the Server Group, else False.
     **/
     function clientServerGroupsIsMemberOf(client, checkGroup){
@@ -1003,23 +1020,6 @@ registerPlugin({
         return compare(object[property](), element);
     }
 
-    /**
-     * [checkVersions description]
-     * @param  {String} wantedVersion The OKlib version your script needs. Provided for example as "1.0.0"
-     * @return {Boolean}               Returns true or false
-     */
-    function checkVersion(wantedVersion){
-        if(wantedVersion){
-            wantedVersion = wantedVersion.split(".");
-            for(var i = 0; i < wantedVersion.length; i++){
-                if(version[i] < parseInt(wantedVersion[i])){
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
-    }
     /*
         Lib Definition
     */

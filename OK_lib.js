@@ -25,18 +25,18 @@ registerPlugin({
     var helper = require('helpers');
 
     engine.notify('OK_lib loaded');
-	var backendEngine = engine.getBackend();
+    var backendEngine = engine.getBackend();
     var activeBotInstances = [];
 
     event.on('connect', function() {
-       	var currentInstances = store.get('activeBotInstances');
-      	if (!currentInstances){
-          	currentInstances = [];
+        var currentInstances = store.get('activeBotInstances');
+        if (!currentInstances){
+            currentInstances = [];
         }
-      	log("Registering as active Bot " + printObject(backend.getBotClient()), 5);
-      	currentInstances.push(backend.getBotClient().uid());
-      	currentInstances = arrayCreateSet(currentInstances);
-      	store.set('activeBotInstances', currentInstances);
+        log("Registering as active Bot " + printObject(backend.getBotClient()), 5);
+        currentInstances.push(backend.getBotClient().uid());
+        currentInstances = arrayCreateSet(currentInstances);
+        store.set('activeBotInstances', currentInstances);
     });
 
 
@@ -71,36 +71,36 @@ registerPlugin({
      */
     function getActiveBotInstances(){
         var currentInstances = store.get('activeBotInstances');
-      	result = [];
-      	newStore = [];
-      	for (var element in currentInstances){
-          	var currentClient = backend.getClientByUniqueID(currentInstances[element]);
-          	if (currentClient){
-              	log("getActiveBotInstances: Active Bot " + printObject(currentClient) + " found", 5);
-              	newStore.push(currentInstances[element]);
-              	result.push(currentClient);
+        result = [];
+        newStore = [];
+        for (var element in currentInstances){
+            var currentClient = backend.getClientByUniqueID(currentInstances[element]);
+            if (currentClient){
+                log("getActiveBotInstances: Active Bot " + printObject(currentClient) + " found", 5);
+                newStore.push(currentInstances[element]);
+                result.push(currentClient);
             }else{
-              	log("getActiveBotInstances: Offline Bot " + currentInstances[element] + " removed", 4);
+                log("getActiveBotInstances: Offline Bot " + currentInstances[element] + " removed", 4);
             }
         }
-      	store.set('activeBotInstances', newStore);
-      	return result;
+        store.set('activeBotInstances', newStore);
+        return result;
     }
 
-  	/*
-  		Channel
-  	*/
+    /*
+        Channel
+    */
 
     /**
      * Returns the ID and the Name of a Channel as String
      * @param  {Channel} channel The Channel
      * @return {String}         String of Channel ID and Name
      */
-  	function channelToString(channel){
-      	return ("["+channel.id()+": "+channel.name()+"]");
+    function channelToString(channel){
+        return ("["+channel.id()+": "+channel.name()+"]");
     }
 
-  	/**
+      /**
        * Returns a array of Channels which meet the provided criterias
        * @param  {String} attribute The Attribute to search for. E.g. 'name' or 'id'
        * @param  {String} value     The Value that should get compared with the Attribute
@@ -108,23 +108,23 @@ registerPlugin({
        * @param  {Function} compare   Optional: A Function for how to compare the Value with the Attribute. If not provided Value and Attribute will get checked for equality
        * @return {Channel[]}           The Channels that matches the criterias
        */
-  	function channelGetChannels(attribute, value, channels, compare){
-      	if(!channels){
-          	log("channelGetChannels: Using all Channels", 5);
-        	channels = backend.getChannels();
+    function channelGetChannels(attribute, value, channels, compare){
+        if(!channels){
+            log("channelGetChannels: Using all Channels", 5);
+            channels = backend.getChannels();
         }
-      	else{
-          	channels = arrayCreateArray(channels);
-        	log("channelGetChannels: Using Channels " + printObject(channels), 5);
+        else{
+            channels = arrayCreateArray(channels);
+            log("channelGetChannels: Using Channels " + printObject(channels), 5);
         }
-  		var result = [];
-      	for(var curChannel in channels){
-          	if(objectFunctionEqualsElement(channels[curChannel], attribute, value, compare)){
-            	result.push(channels[curChannel]);
-              	log("channelGetChannels: Found Channel " + printObject(channels[curChannel]), 5);
+        var result = [];
+        for(var curChannel in channels){
+            if(objectFunctionEqualsElement(channels[curChannel], attribute, value, compare)){
+                result.push(channels[curChannel]);
+                log("channelGetChannels: Found Channel " + printObject(channels[curChannel]), 5);
             }
         }
-      	return result;
+        return result;
     }
 
     /**
@@ -133,17 +133,17 @@ registerPlugin({
      * @return {Channel[]}               Array of all Subchannels from the given Channel
      */
     function channelGetSubchannels(parentChannel){
-  		var channels = backend.getChannels();
-  		var result = [];
-  		for (var curChannel in channels){
-          	curParentChannel = channels[curChannel].parent();
-        	if (curParentChannel && equal(curParentChannel.id(), parentChannel.id())){
-              	result.push(channels[curChannel]);
-              	log("channelGetSubchannels: Found Channel " + printObject(channels[curChannel]), 5);
+        var channels = backend.getChannels();
+        var result = [];
+        for (var curChannel in channels){
+            curParentChannel = channels[curChannel].parent();
+            if (curParentChannel && equal(curParentChannel.id(), parentChannel.id())){
+                result.push(channels[curChannel]);
+                log("channelGetSubchannels: Found Channel " + printObject(channels[curChannel]), 5);
             }
         }
         return result;
-	}
+    }
 
     /*
         Client
@@ -154,8 +154,8 @@ registerPlugin({
      * @param  {Client} client
      * @return {String}
      */
-  	function clientToString(client){
-      	return ("["+client.id()+"/"+client.uid()+": "+client.nick()+"]");
+    function clientToString(client){
+        return ("["+client.id()+"/"+client.uid()+": "+client.nick()+"]");
     }
 
     /**
@@ -163,8 +163,8 @@ registerPlugin({
      * @param  {Client} client
      * @return {String}
      */
-  	function clientToURLString(client){
-      	return ("[URL=client://"+client.id()+"/"+client.uid()+"]"+client.nick()+"[/URL]");
+    function clientToURLString(client){
+        return ("[URL=client://"+client.id()+"/"+client.uid()+"]"+client.nick()+"[/URL]");
     }
 
     /**
@@ -203,7 +203,7 @@ registerPlugin({
         for(var curClient in clients){
             if(!arrayContainsOne(arrayObjectParseAttribute(clients[curClient].getGroups(), id, true), array)){
                 result.push(clients[curClient]);
-              	log("clientFilterByServergroup: Found Client " + printObject(clients[curClient]), 5);
+                log("clientFilterByServergroup: Found Client " + printObject(clients[curClient]), 5);
             }
         }
         return result;
@@ -235,25 +235,25 @@ registerPlugin({
      */
     function clientParseClients(UIDs){
         UIDs = arrayCreateArray(UIDs);
-      	if(UIDs.length == 0){
+        if(UIDs.length == 0){
             log("clientParseClients: Provided no UIDs to parse", 3);
             return;
         }
         var result = [];
         for (var curUID in UIDs){
-          	var client = backend.getClientByUID(UIDs[curUID]);
-          	if(client){
-            	result.push(client);
-            	log("clientsParseClient: Resolved UID '" + UIDs[curUID] + "' to '" + printObject(client) + "'", 5);
+            var client = backend.getClientByUID(UIDs[curUID]);
+            if(client){
+                result.push(client);
+                log("clientsParseClient: Resolved UID '" + UIDs[curUID] + "' to '" + printObject(client) + "'", 5);
             }
-          	else{
-              	log("clientsParseClient: A client with the UID '" + UIDs[curUID] + "' could not be found on the server", 4);
+            else{
+                log("clientsParseClient: A client with the UID '" + UIDs[curUID] + "' could not be found on the server", 4);
             }
         }
         return result;
     }
 
-	/**
+    /**
      * Searches for a Client by the provided String and returns the matches.
      * @param  {String} stringToParse String to search for
      * @param  {Boolean} partMatch     Optional: Flag for using Part matching. If not provided Attribute and Value will be checked for equality (==)[Not optional if the Case Sensitive flag was set]
@@ -261,34 +261,34 @@ registerPlugin({
      * @param  {Client[]} clients       Optional: The Client Searchpool. If not provided all clients will get used
      * @return {Client[] | Client}                A empty Array if nothing was found. A Client Object if only one matching Client was found or a Client Array if more than one matching Client was found.
      */
-	function clientSearch(stringToParse, partMatch, caseSensitive, clients){
-      	if(!clients){
-          	log("clientSearch: Using all Clients", 5);
-        	clients = backend.getClients();
-      	}else{
-          	clients = arrayCreateArray(clients);
-          	log("clientSearch: Using Clients " + printObject(clients), 5);
-        }
-      	var result = [];
-      	if(!caseSensitive){
-          	log("clientSearch: Ignore Case", 5);
-          	stringToParse = stringToParse.toLowerCase();
+    function clientSearch(stringToParse, partMatch, caseSensitive, clients){
+        if(!clients){
+            log("clientSearch: Using all Clients", 5);
+            clients = backend.getClients();
         }else{
-        	log("clientSearch: Case Sensitive Search", 5);
+            clients = arrayCreateArray(clients);
+            log("clientSearch: Using Clients " + printObject(clients), 5);
         }
-      	var compare = equal;
-      	if (partMatch){
-          	log("clientSearch: Using contains as comparator", 5);
-          	compare = contains;
+        var result = [];
+        if(!caseSensitive){
+            log("clientSearch: Ignore Case", 5);
+            stringToParse = stringToParse.toLowerCase();
         }else{
-          	log("clientSearch: Using equal as comparator", 5);
+            log("clientSearch: Case Sensitive Search", 5);
         }
-      	for(var client in clients){
-          	clientName = clients[client].name();
-          	if(!caseSensitive){
-              	clientName = clientName.toLowerCase();
+        var compare = equal;
+        if (partMatch){
+            log("clientSearch: Using contains as comparator", 5);
+            compare = contains;
+        }else{
+            log("clientSearch: Using equal as comparator", 5);
+        }
+        for(var client in clients){
+            clientName = clients[client].name();
+            if(!caseSensitive){
+                clientName = clientName.toLowerCase();
             }
-          	if(compare(clientName, stringToParse)){
+            if(compare(clientName, stringToParse)){
                 result.push(clients[client]);
                 log("clientSearch: Found a part match between '" + stringToParse + "' and " + printObject(clients[client]), 5);
             }
@@ -301,8 +301,8 @@ registerPlugin({
                 log("clientSearch: Found a ID match between '" + stringToParse + "' and " + printObject(clients[client]), 5);
             }
         }
-      	if(result.length == 0){
-        	log("clientSearch: Found no matching client", 4);
+          if(result.length == 0){
+            log("clientSearch: Found no matching client", 4);
             return result;
         }else if(result.length == 1){
             log("clientSearch: Found '1' matching client", 4);
@@ -320,33 +320,33 @@ registerPlugin({
      * @param  {Function} compare  A Compare Function that should be used for the Comparison, if not set 'equal' is used
      * @return {Client[]}           The matching Clients
      */
-  	function clientGetClients(attribute, value, clients, compare){
-      	if(!clients){
-          	log("clientGetClients: Using all Clients", 5);
-        	clients = backend.getClients();
-      	}else{
-      		clients = arrayCreateArray(clients);
-          	log("clientGetClients: Using Clients " + printObject(clients), 5);
+    function clientGetClients(attribute, value, clients, compare){
+        if(!clients){
+            log("clientGetClients: Using all Clients", 5);
+            clients = backend.getClients();
+        }else{
+            clients = arrayCreateArray(clients);
+            log("clientGetClients: Using Clients " + printObject(clients), 5);
         }
-      	var result = [];
-      	for(var curClient in clients){
-          	if(objectFunctionEqualsElement(clients[curClient], attribute, value, compare)){
-            	log("clientGetClients: Found Client " + printObject(clients[curClient]), 5);
-              	result.push(clients[curClient]);
+        var result = [];
+        for(var curClient in clients){
+            if(objectFunctionEqualsElement(clients[curClient], attribute, value, compare)){
+                log("clientGetClients: Found Client " + printObject(clients[curClient]), 5);
+                result.push(clients[curClient]);
             }
         }
-      	return result;
+        return result;
     }
 
     /**
     * Checks if a Client is the Member of all Server Groups.
     *
-    * @param {Client} client 	The tested Client as a Client Object.
-    * @param {ServerGroup[] | Integer[]} 	checkGroups The Groups that should be checked as an Array of GroupIDs.
-    * @returns {Boolean} 		True if the Client is in all Groups, else False.
+    * @param {Client} client     The tested Client as a Client Object.
+    * @param {ServerGroup[] | Integer[]}     checkGroups The Groups that should be checked as an Array of GroupIDs.
+    * @returns {Boolean}         True if the Client is in all Groups, else False.
     **/
     function clientServerGroupsIsMemberOfAll(client, checkGroups){
-      	checkGroups = serverGroupParseIDs(checkGroups);
+        checkGroups = serverGroupParseIDs(checkGroups);
         var serverGroups = serverGroupParseIDs(client.getServerGroups());
         return arrayContainsAll(serverGroups, checkGroups);
     }
@@ -359,7 +359,7 @@ registerPlugin({
     * @returns {Boolean} True if the Client is in one Group, else False.
     **/
     function clientServerGroupsIsMemberOfOne(client, checkGroups){
-      	checkGroups = serverGroupParseIDs(checkGroups);
+        checkGroups = serverGroupParseIDs(checkGroups);
         var serverGroups = serverGroupParseIDs(client.getServerGroups());
         return arrayContainsOne(serverGroups, checkGroups);
     }
@@ -372,9 +372,9 @@ registerPlugin({
     * @returns {Boolean} True if the Client is Member of the Server Group, else False.
     **/
     function clientServerGroupsIsMemberOf(client, checkGroup){
-      	if (!isNumber(checkGroup)){
-          	log("clientServerGroupsIsMemberOf: Resolved the servergroup '" + printObject(checkGroup) + "' to the ID '" + checkGroup.id() + "'", 5);
-          	checkGroup = checkGroup.id();
+        if (!isNumber(checkGroup)){
+            log("clientServerGroupsIsMemberOf: Resolved the servergroup '" + printObject(checkGroup) + "' to the ID '" + checkGroup.id() + "'", 5);
+            checkGroup = checkGroup.id();
         }
         var serverGroups = serverGroupParseIDs(client.getServerGroups());
         return arrayContainsElement(serverGroups, checkGroup);
@@ -387,7 +387,7 @@ registerPlugin({
      */
     function clientServerGroupAddToGroups(client, groups){
         groups = arrayCreateArray(groups);
-      	if(groups.length == 0){
+        if(groups.length == 0){
             log("clientServerGroupAddToGroups: Provided no Group to add", 3);
             return;
         }
@@ -397,14 +397,14 @@ registerPlugin({
                 log("clientServerGroupAddToGroups: Client '" + printObject(client) + "' was added to the servergroup " + printObject(groups[curGroup]), 5);
             }
             else {
-              	log("clientServerGroupAddToGroups: Client '" + printObject(client) + "' already has the servergroup " + printObject(groups[curGroup]), 4);
+                log("clientServerGroupAddToGroups: Client '" + printObject(client) + "' already has the servergroup " + printObject(groups[curGroup]), 4);
             }
         }
     }
 
     /**
      * Removes the Clients from the given ServerGroups
-     * @param  {Client} client	The Client to remove ServerGroups from
+     * @param  {Client} client    The Client to remove ServerGroups from
      * @param  {ServerGroup[] | Integer[]} groups The ServerGroups or groupIDs that should be removed from the Client
      */
     function clientServerGroupRemoveFromGroups(client, groups){
@@ -414,7 +414,7 @@ registerPlugin({
             return;
         }
         for (var curGroup in groups){
-        	if (clientServerGroupsIsMemberOf(client, groups[curGroup])){
+            if (clientServerGroupsIsMemberOf(client, groups[curGroup])){
                 client.removeFromServerGroup(groups[curGroup]);
                 log("clientServerGroupRemoveFromGroups: Client '" + printObject(client) + "' was removed from the servergroup " + printObject(groups[curGroup]), 5);
             }
@@ -424,8 +424,8 @@ registerPlugin({
         }
     }
 
-  	/*
-    	Strings
+      /*
+        Strings
     */
 
     /*
@@ -435,10 +435,10 @@ registerPlugin({
     /**
      * Returns a String Representation of a Group
      * @param  {Group} group
-     * @return {String}	A String Representation of the given Group
+     * @return {String}    A String Representation of the given Group
      */
-  	function groupToString(group){
-      	return ("["+group.id()+": "+group.name()+"]");
+    function groupToString(group){
+        return ("["+group.id()+": "+group.name()+"]");
     }
 
     /**
@@ -450,11 +450,11 @@ registerPlugin({
         serverGroups = arrayCreateArray(serverGroups);
         var result = [];
         for (var serverGroup in serverGroups){
-          	if (isNumber(serverGroups[0])){
-              	result.push(serverGroups[serverGroup]);
+            if (isNumber(serverGroups[0])){
+                result.push(serverGroups[serverGroup]);
             }else{
-              result.push(serverGroups[serverGroup].id());
-              log("serverGroupParseIDs: Resolved the servergroup '" + printObject(serverGroups[serverGroup]) + "' to the ID '" + serverGroups[serverGroup].id() + "'", 5);
+                result.push(serverGroups[serverGroup].id());
+                log("serverGroupParseIDs: Resolved the servergroup '" + printObject(serverGroups[serverGroup]) + "' to the ID '" + serverGroups[serverGroup].id() + "'", 5);
             }
         }
         return result;
@@ -469,33 +469,33 @@ registerPlugin({
         groupIDs = arrayCreateArray(groupIDs);
         var result = [];
         for (var curID in groupIDs){
-          	if (!isNumber(groupIDs[curID])){
-              	result.push(groupIDs[curID]);
+            if (!isNumber(groupIDs[curID])){
+                result.push(groupIDs[curID]);
             }else{
-              	var group = backend.getServerGroupByID(groupIDs[curID]);
-            	if (group){
-                	result.push(group);
-                	log("serverGroupParseGroups: Resolved the ID '" + groupIDs[curID] + "' to the servergroup " + printObject(group), 5);
-            	}
-          		else{
-              		log("serverGroupParseGroups: A servergroup with the ID '" + groupIDs[curID] + "' was not found on the server", 2);
-            	}
+                var group = backend.getServerGroupByID(groupIDs[curID]);
+                if (group){
+                    result.push(group);
+                    log("serverGroupParseGroups: Resolved the ID '" + groupIDs[curID] + "' to the servergroup " + printObject(group), 5);
+                }
+                else{
+                    log("serverGroupParseGroups: A servergroup with the ID '" + groupIDs[curID] + "' was not found on the server", 2);
+                }
             }
         }
         return result;
     }
 
     /*
-    	User
+        User
     */
 
     /**
      * Returns a String Representation of a User
      * @param  {User} user
-     * @return {String}	A String Representation of the given User
+     * @return {String}    A String Representation of the given User
      */
     function userToString(user){
-      	return ("["+user.id()+": "+user.name()+"]");
+        return ("["+user.id()+": "+user.name()+"]");
     }
 
     /**
@@ -504,12 +504,12 @@ registerPlugin({
      * @param  {Integer} privileges The numerical value of the required Privileges
      * @return {Boolean} Returns true if the Sinusbot User has the required Privileges
      */
-  	function userHasPrivileges(user, privileges){
-      	var userPriv = user.privileges();
-      	if ((userPriv & privileges) == privileges){
-          	return true;
+    function userHasPrivileges(user, privileges){
+        var userPriv = user.privileges();
+        if ((userPriv & privileges) == privileges){
+            return true;
         }
-      	return false;
+        return false;
     }
 
     /**
@@ -517,15 +517,15 @@ registerPlugin({
      * @param  {Client} client A Teamspeak Client
      * @return {Integer}  Returns the Privileges as a numerical value
      */
-  	function userGetClientPrivileges(client){
-      	var users = engine.getUsers();
-      	var privileges = 0;
-      	for (var userID in users){
-          	if (userIsClientUser(client, users[userID])){
-            	privileges = privileges | users[userID].privileges();
+    function userGetClientPrivileges(client){
+        var users = engine.getUsers();
+        var privileges = 0;
+        for (var userID in users){
+            if (userIsClientUser(client, users[userID])){
+                privileges = privileges | users[userID].privileges();
             }
         }
-      	return privileges;
+        return privileges;
     }
 
     /**
@@ -534,9 +534,9 @@ registerPlugin({
      * @param  {Integer} privileges The numerical value of the required Privileges
      * @return {Boolean} Returns true if the Client has the required Privileges
      */
-  	function userClientHasPrivileges(client, privileges){
-      	var clientPrivileges = userGetClientPrivileges(client);
-      	return ((clientPrivileges & privileges) == privileges);
+    function userClientHasPrivileges(client, privileges){
+        var clientPrivileges = userGetClientPrivileges(client);
+        return ((clientPrivileges & privileges) == privileges);
     }
 
     /**
@@ -545,43 +545,43 @@ registerPlugin({
      * @param  {User} user A Sinusbot User
      * @return {Boolean} Returns true if the User either has a matching UID or the Client is Member of the required ServerGroup
      */
-	function userIsClientUser(client, user){
-      	if (user.tsUid() == client.uid()){
-          	log("userIsClientUser: "+printObject(client)+"-"+printObject(user)+": UID Match", 5);
-          	return true;
+    function userIsClientUser(client, user){
+        if (user.tsUid() == client.uid()){
+            log("userIsClientUser: "+printObject(client)+"-"+printObject(user)+": UID Match", 5);
+            return true;
         }
-      	if (clientServerGroupsIsMemberOf(client, user.tsGroupId())){
-          	log("userIsClientUser: "+printObject(client)+"-"+printObject(user)+": ServerGroup Match", 5);
-          	return true;
+        if (clientServerGroupsIsMemberOf(client, user.tsGroupId())){
+            log("userIsClientUser: "+printObject(client)+"-"+printObject(user)+": ServerGroup Match", 5);
+            return true;
         }else{
-          	return false;
+            return false;
         }
     }
 
     /*
-    	Track
+        Track
     */
 
     /**
      * Returns a String Representation of a Track
      * @param  {Track} track
-     * @return {String}	A String Representation of the given Track
+     * @return {String}    A String Representation of the given Track
      */
     function trackToString(track){
-      	return ("["+track.artist()+": "+track.title()+"]");
+        return ("["+track.artist()+": "+track.title()+"]");
     }
 
     /*
-    	Playlist
+        Playlist
     */
 
     /**
      * Returns a String Representation of a Playlist
      * @param  {Playlist} playlist
-     * @return {String}	A String Representation of the given Playlist
+     * @return {String}    A String Representation of the given Playlist
      */
     function playlistToString(playlist){
-      	return ("["+playlist.id()+": "+playlist.name()+"]");
+        return ("["+playlist.id()+": "+playlist.name()+"]");
     }
 
     /*
@@ -603,42 +603,42 @@ registerPlugin({
     /**
      * Returns a String Representation of an Object
      * @param  {Object} object
-     * @return {String}	A String Representation of the given Object
+     * @return {String}    A String Representation of the given Object
      */
     function printObject(object){
-      	try{
-          	object.nick();
-          	return clientToString(object);
+        try{
+            object.nick();
+            return clientToString(object);
         }catch(err){
-          	try{
-              	object.icon();
-              	return groupToString(object);
+            try{
+                object.icon();
+                return groupToString(object);
             }catch(err){
-                  try{
-                      object.codec();
-                      return channelToString(object);
-                  }catch(err){
-						try{
-                            object.isAdmin();
-                            return userToString(object);
+                try{
+                    object.codec();
+                    return channelToString(object);
+                }catch(err){
+                    try{
+                        object.isAdmin();
+                        return userToString(object);
+                    }catch(err){
+                        try{
+                            object.artist();
+                            return trackToString(object);
                         }catch(err){
-                              try{
-                                  object.artist();
-                                  return trackToString(object);
-                              }catch(err){
-                                    try{
-                                        object.getTracks();
-                                        return playlistToString(object);
-                                    }catch(err){
-                                          if (Array.isArray(object)){
-                                          		return arrayToString(object);
-                                          }else{
-                                                return ""+object;
-                                          }
-                                    }
-                              }
+                            try{
+                                object.getTracks();
+                                return playlistToString(object);
+                            }catch(err){
+                                if (Array.isArray(object)){
+                                    return arrayToString(object);
+                                }else{
+                                    return ""+object;
+                                }
+                            }
                         }
-                  }
+                    }
+                }
             }
         }
     }
@@ -646,18 +646,18 @@ registerPlugin({
     /**
      * Returns a String Representation of an Array
      * @param  {Object[]} array
-     * @return {String}	A String Representation of the given Array
+     * @return {String}    A String Representation of the given Array
      */
     function arrayToString(array){
-      	var result = "[";
-      	for (var i=0; i < array.length; i++){
-        	result += printObject(array[i]);
-          	if (i+1 < array.length){
-              	result += ",";
+        var result = "[";
+        for (var i=0; i < array.length; i++){
+            result += printObject(array[i]);
+            if (i+1 < array.length){
+                result += ",";
             }
-      	}
-      	result += "]";
-      	return result;
+        }
+        result += "]";
+        return result;
     }
 
     /**
@@ -691,7 +691,7 @@ registerPlugin({
         for(var j = 0; j < elements.length; j++){
             result.push(elements[j]);
         }
-      	log("arrayCombineArrays: Found '" + result.length + "' Objects", 4);
+        log("arrayCombineArrays: Found '" + result.length + "' Objects", 4);
         return result;
     }
 
@@ -703,8 +703,8 @@ registerPlugin({
      * @return {Boolean}  Returns true if the Element is contained in the Array
      */
     function arrayContainsElement(array, element, compare){
-      	if (!compare){
-          	compare = equal;
+            if (!compare){
+                compare = equal;
         }
         for (var arrayElement in array){
             if (compare(array[arrayElement], element)){
@@ -754,14 +754,14 @@ registerPlugin({
      */
     function arrayCreateSet(array, compare){
         var result = [];
-    	if (!Array.isArray(array)){
+        if (!Array.isArray(array)){
             result.push(array);
             return result;
         }
         else{
-       	    for (var i = 0; i < array.length; i++){
-           	    if (!arrayContainsElement(result, array[i], compare)){
-               	    result.push(array[i]);
+               for (var i = 0; i < array.length; i++){
+                    if (!arrayContainsElement(result, array[i], compare)){
+                        result.push(array[i]);
                 }
             }
             return result;
@@ -773,7 +773,7 @@ registerPlugin({
      * @param  {Object[]} array
      * @param  {Object[]} elements
      * @param  {Function} compare A Compare Function that should be used for the Comparison, if not set 'equal' is used
-     * @return {Object[]}	An Array that contains the Elements that were only present in one of the Arrays
+     * @return {Object[]}    An Array that contains the Elements that were only present in one of the Arrays
      */
     function arrayDifference(array, elements, compare){
         var result = [];
@@ -799,7 +799,7 @@ registerPlugin({
      */
     function arrayGetIndex(array, element, compare){
         if (!compare){
-          	compare = equal;
+            compare = equal;
         }
         for (var i = 0; i < array.length; i++){
             if (compare(array[i], element)){
@@ -848,13 +848,13 @@ registerPlugin({
     /**
      * Removes the Elements of one Array of another Array
      * @param  {Object[]} array
-     * @param  {Object[]} elements	The Array that contains the Elements to remove
-     * @param  {Function} compare	A Compare Function that should be used for the Comparison, if not set 'equal' is used
-     * @return {Array}	A Copy of the Array that does not contain the removed Elements
+     * @param  {Object[]} elements    The Array that contains the Elements to remove
+     * @param  {Function} compare    A Compare Function that should be used for the Comparison, if not set 'equal' is used
+     * @return {Array}    A Copy of the Array that does not contain the removed Elements
      */
     function arrayRemoveElements(array, elements, compare){
         if (!compare){
-          	compare = equal;
+            compare = equal;
         }
         array = arrayCreateArray(array);
         elements = arrayCreateArray(elements);
@@ -876,8 +876,8 @@ registerPlugin({
      * @param  {Object} b
      * @return {Boolean}   Returns true when a is equal b
      */
-  	function equal(a, b){
-      	return (a == b);
+    function equal(a, b){
+        return (a == b);
     }
 
     /**
@@ -886,8 +886,8 @@ registerPlugin({
      * @param  {Object} b
      * @return {Boolean}   Returns true when a is not equal b
      */
-  	function unequal(a, b){
-      	return (a != b);
+    function unequal(a, b){
+        return (a != b);
     }
 
     /**
@@ -896,8 +896,8 @@ registerPlugin({
      * @param  {Object} b
      * @return {Boolean}   Returns true when a is greater b
      */
-  	function greater(a, b){
-      	return (a > b);
+    function greater(a, b){
+        return (a > b);
     }
 
     /**
@@ -906,8 +906,8 @@ registerPlugin({
      * @param  {Object} b
      * @return {Boolean}   Returns true when a is less b
      */
-  	function less(a, b){
-      	return (a < b);
+    function less(a, b){
+        return (a < b);
     }
 
     /**
@@ -916,8 +916,8 @@ registerPlugin({
      * @param  {Object} b
      * @return {Boolean}   Returns true when a is greater or equal b
      */
-  	function greaterOrEqual(a, b){
-      	return (a >= b);
+    function greaterOrEqual(a, b){
+        return (a >= b);
     }
 
     /**
@@ -926,8 +926,8 @@ registerPlugin({
      * @param  {Object} b
      * @return {Boolean}   Returns true when a is less or equal b
      */
-  	function lessOrEqual(a, b){
-      	return (a <= b);
+    function lessOrEqual(a, b){
+        return (a <= b);
     }
 
     /**
@@ -936,11 +936,11 @@ registerPlugin({
      * @param  {String} b
      * @return {Boolean}   Returns true when String b is contained in String a
      */
-	function contains(a, b){
-      	if(a.indexOf(b) != -1){
-          	return true;
+    function contains(a, b){
+        if(a.indexOf(b) != -1){
+            return true;
         }
-      	return false;
+        return false;
     }
 
     /**
@@ -950,10 +950,10 @@ registerPlugin({
      * @return {Boolean}   Returns true when String b is contained in String a
      */
     function containsIgnoreCase(a, b){
-      	if(a.toLowerCase().indexOf(b.toLowerCase()) != -1){
-          	return true;
+          if(a.toLowerCase().indexOf(b.toLowerCase()) != -1){
+            return true;
         }
-      	return false;
+        return false;
     }
 
     /**
@@ -962,7 +962,7 @@ registerPlugin({
      * @return {Boolean}        Returns true if the Object is a Number
      */
     function isNumber(number){
-      	return !isNaN(number);
+        return !isNaN(number);
     }
 
     /**
@@ -976,10 +976,10 @@ registerPlugin({
         array = arrayCreateArray(array);
         var result = [];
         for (var object in array){
-          	if (isFunction){
-              	result.push(array[object][attribute]());
+              if (isFunction){
+                result.push(array[object][attribute]());
             }else{
-            	result.push(array[object][attribute]);
+                result.push(array[object][attribute]);
             }
         }
         log("arrayObjectParseAttribute: Found '" + result.length + "' Objects", 4);
@@ -995,8 +995,8 @@ registerPlugin({
      * @return {Boolean}   Returns the Value of the Comparison
      */
     function objectFunctionEqualsElement(object, property, element, compare){
-      	if (!compare){
-          	compare = equal;
+        if (!compare){
+            compare = equal;
         }
         return compare(object[property](), element);
     }
@@ -1012,19 +1012,19 @@ registerPlugin({
         },
 
         channel: {
-          	toString: channelToString,
+            toString: channelToString,
             getChannels: channelGetChannels,
             getSubchannels: channelGetSubchannels,
         },
 
         client: {
-          	toString: clientToString,
-          	toURLString: clientToURLString,
+            toString: clientToString,
+            toURLString: clientToURLString,
             equal: equalClientObjects,
             filterByClients: clientFilterByClients,
             filterByServerGroups: clientFilterByServerGroups,
             toUIDs: clientParseUIDs,
-          	parseFromUIDs: clientParseClients,
+            parseFromUIDs: clientParseClients,
             getClients: clientGetClients,
             search: clientSearch,
             isMemberOfGroup: clientServerGroupsIsMemberOf,
@@ -1032,28 +1032,28 @@ registerPlugin({
             isMemberOfOne: clientServerGroupsIsMemberOfOne,
             addToGroups: clientServerGroupAddToGroups,
             removeFromGroups: clientServerGroupRemoveFromGroups,
-          	isAuthorized: clientServerGroupsIsMemberOfOne,
-          	hasPrivileges: userClientHasPrivileges,
-          	getPrivileges: userGetClientPrivileges,
+            isAuthorized: clientServerGroupsIsMemberOfOne,
+            hasPrivileges: userClientHasPrivileges,
+            getPrivileges: userGetClientPrivileges,
         },
 
-      	channelGroup: {
-          	toString: groupToString,
+        channelGroup: {
+            toString: groupToString,
         },
 
         serverGroup: {
-          	toString: groupToString,
+            toString: groupToString,
             toIDs: serverGroupParseIDs,
             toGroups: serverGroupParseGroups,
         },
 
         user: {
-			toString: userToString,
-          	hasPrivileges: userHasPrivileges,
-          	getClientPrivileges: userGetClientPrivileges,
-          	isClientUser: userIsClientUser,
-          	privileges: {
-              	PRIV_LOGIN: 1,
+            toString: userToString,
+            hasPrivileges: userHasPrivileges,
+            getClientPrivileges: userGetClientPrivileges,
+            isClientUser: userIsClientUser,
+            privileges: {
+                PRIV_LOGIN: 1,
                 PRIV_LIST_FILE: 2,
                 PRIV_UPLOAD_FILE: 4,
                 PRIV_DELETE_FILE: 8,
@@ -1073,12 +1073,12 @@ registerPlugin({
             }
         },
 
-      	track: {
-			toString: trackToString,
+        track: {
+            toString: trackToString,
         },
 
-      	playlist: {
-			toString: playlistToString,
+        playlist: {
+            toString: playlistToString,
         },
 
         array: {
@@ -1098,7 +1098,7 @@ registerPlugin({
         },
 
         helper: {
-          	printObject: printObject,
+            printObject: printObject,
             isNumber: isNumber,
             objectFunctionEqualsElement: objectFunctionEqualsElement,
         },

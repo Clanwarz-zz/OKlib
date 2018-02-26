@@ -1027,13 +1027,11 @@ registerPlugin({
           	parseFromUIDs: clientParseClients,
             getClients: clientGetClients,
             search: clientSearch,
-            serverGroups: {
-                isMemberOfGroup: clientServerGroupsIsMemberOf,
-                isMemberOfAll: clientServerGroupsIsMemberOfAll,
-                isMemberOfOne: clientServerGroupsIsMemberOfOne,
-                addToGroups: clientServerGroupAddToGroups,
-                removeFromGroups: clientServerGroupRemoveFromGroups,
-            },
+            isMemberOfGroup: clientServerGroupsIsMemberOf,
+            isMemberOfAll: clientServerGroupsIsMemberOfAll,
+            isMemberOfOne: clientServerGroupsIsMemberOfOne,
+            addToGroups: clientServerGroupAddToGroups,
+            removeFromGroups: clientServerGroupRemoveFromGroups,
           	isAuthorized: clientServerGroupsIsMemberOfOne,
           	hasPrivileges: userClientHasPrivileges,
           	getPrivileges: userGetClientPrivileges,
@@ -1076,11 +1074,11 @@ registerPlugin({
         },
 
       	track: {
-			track: trackToString,
+			toString: trackToString,
         },
 
       	playlist: {
-			playlist: playlistToString,
+			toString: playlistToString,
         },
 
         array: {
@@ -1101,19 +1099,20 @@ registerPlugin({
 
         helper: {
           	printObject: printObject,
-          	comparator: {
-              	equal: equal,
-              	unequal: unequal,
-              	greater: greater,
-              	less: less,
-              	greaterEqual: greaterOrEqual,
-              	lessEqual: lessOrEqual,
-              	contains: contains,
-                containsIgnoreCase: containsIgnoreCase,
-            },
             isNumber: isNumber,
             objectFunctionEqualsElement: objectFunctionEqualsElement,
-        }
+        },
+
+        comparator: {
+            equal: equal,
+            unequal: unequal,
+            greater: greater,
+            less: less,
+            greaterEqual: greaterOrEqual,
+            lessEqual: lessOrEqual,
+            contains: contains,
+            containsIgnoreCase: containsIgnoreCase,
+        },
     };
 
     engine.export(libModule);

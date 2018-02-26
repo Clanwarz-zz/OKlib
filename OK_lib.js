@@ -51,10 +51,10 @@ registerPlugin({
     **/
     event.on('chat', function(ev) {
         if (ev.text == "!help" || ev.text == "!info"){
-            ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/ok-library.322/]OKlib[/url], which is a libary for basic script functions.");
+            ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/ok-library.322/]OKlib[/url], which is a libary for basic script functions. The full documentation can be found [url=http://server-n2.de/OKlib/external]here[/url]");
         }
     });
-    
+
     /**
      * Checks the current version of OKlib
      * @param  {String} wantedVersion The OKlib version your script needs. Provided for example as "1.0.0"
@@ -63,7 +63,7 @@ registerPlugin({
     function checkVersion(wantedVersion){
         return version >= wantedVersion;
     }
-    
+
     /**
      * TODO: All
      */

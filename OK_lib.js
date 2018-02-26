@@ -1,9 +1,9 @@
 registerPlugin({
     name: 'OK_lib',
     engine: '>= 0.13.37',
-    version: '1.0',
+    version: '1.0.1',
     description: 'A lib that is OK. For other scripts to use.',
-    author: 'Tuetchen || Smorrebrod || Cedrik <cedrik.paetz@gmail.com> && Diesmon || Dimos <dontmindme12@web.de> & ',
+    author: 'Tuetchen || Smorrebrod || Cedrik <cedrik.paetz@gmail.com> & Diesmon || Dimos <dontmindme12@web.de>',
     vars: [
         {
             name: 'logLevel',
@@ -28,6 +28,8 @@ registerPlugin({
     var backendEngine = engine.getBackend();
     var activeBotInstances = [];
 
+    var version = [1,0,0];
+
     event.on('connect', function() {
         var currentInstances = store.get('activeBotInstances');
         if (!currentInstances){
@@ -48,7 +50,7 @@ registerPlugin({
     **/
     event.on('chat', function(ev) {
         if (ev.text == "!help" || ev.text == "!info"){
-            ev.client.chat("This bot uses the OK_lib, which is a libary for basic script functions.");
+            ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/ok-library.322/]OKlib[https://forum.sinusbot.com/resources/ok-library.322/], which is a libary for basic script functions.");
         }
     });
 
@@ -1001,12 +1003,30 @@ registerPlugin({
         return compare(object[property](), element);
     }
 
+    /**
+     * [checkVersions description]
+     * @param  {String} wantedVersion The OKlib version your script needs. Provided for example as "1.0.0"
+     * @return {Boolean}               Returns true or false
+     */
+    function checkVersion(wantedVersion){
+        if(wantedVersion){
+            wantedVersion = wantedVersion.split(".");
+            for(var i = 0; i < wantedVersion.length; i++){
+                if(version[i] < parseInt(wantedVersion[i])){
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
     /*
         Lib Definition
     */
 
     var libModule = {
         general: {
+            checkVersion: checkVersion,
             log: log,
             getBots: getActiveBotInstances,
         },

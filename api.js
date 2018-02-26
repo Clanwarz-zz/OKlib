@@ -362,13 +362,13 @@ class general {
      * @param  {String} wantedVersion The OKlib version your script needs. Provided for example as "1.0.0"
      * @return {Boolean}  Returns true if the installed version is newer
      */
-    function checkVersion(wantedVersion){ }
+    checkVersion(wantedVersion){ }
     
     /**
      * Not Implemented Yet
      * TODO: All
      */
-    function checkForUpdates(){ }
+    checkForUpdates(){ }
 }
 /**
  * @mixin helper

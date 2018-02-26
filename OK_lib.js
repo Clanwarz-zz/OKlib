@@ -391,6 +391,10 @@ registerPlugin({
     * @returns {Boolean} True if the Client is Member of the Server Group, else False.
     **/
     function clientServerGroupsIsMemberOf(client, checkGroup){
+        if (!checkGroup){
+            log("clientServerGroupsIsMemberOf: No ServerGroup was given!", 3);
+            return false;
+        }
         if (!isNumber(checkGroup)){
             log("clientServerGroupsIsMemberOf: Resolved the servergroup '" + printObject(checkGroup) + "' to the ID '" + checkGroup.id() + "'", 5);
             checkGroup = checkGroup.id();

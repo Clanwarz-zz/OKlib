@@ -13,7 +13,7 @@
  *      event.on('load', function(){
  *          var lib = require('OK_lib.js');
  *          main(lib);
- *      }
+ *      });
  *      function main(lib) {
  *          //Your code goes here
  *      }

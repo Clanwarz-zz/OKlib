@@ -3,7 +3,7 @@ registerPlugin({
     engine: '>= 0.13.37',
     version: '1.0',
     description: 'A lib that is OK. For other scripts to use.',
-    author: 'Diesmon <dontmindme12@web.de> & Tuetchen || Smorrebrod || Cedrik <cedrik.paetz@gmail.com>',
+    author: 'Tuetchen || Smorrebrod || Cedrik <cedrik.paetz@gmail.com> && Diesmon || Dimos <dontmindme12@web.de> & ',
     vars: [
         {
             name: 'logLevel',

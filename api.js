@@ -458,6 +458,7 @@ class user {
     /**
      * @description
      * Returns the numerical value for a specific privilege
+     * ```
      * PRIV_LOGIN = 1
      * PRIV_LIST_FILE = 2
      * PRIV_UPLOAD_FILE = 4
@@ -475,6 +476,7 @@ class user {
      * PRIV_ENQUEUENEXT = 16384
      * PRIV_EDITBOT = 65536
      * PRIV_EDITINSTANCE = 131072
+     * ```
      *
      * @example
      * var lib = require('OK_lib.js');

@@ -8,7 +8,7 @@ registerPlugin({
     vars: [
         {
             name: 'logLevel',
-            title: 'Sets a global debug log level for all scripts that use this lib. The logs will be displayed in the instance logs.',
+            title: 'Sets a global debug log level for all scripts that use this lib. The logs will be displayed in the instance log.',
             type: 'select',
             options: ['1 - Critical','2 - Error','3 - Missing items','4 - Debug','5 - Ludicrous']
         }
@@ -51,7 +51,7 @@ registerPlugin({
     **/
     event.on('chat', function(ev) {
         if (ev.text == "!help" || ev.text == "!info"){
-            ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/ok-library.322/]OKlib[https://forum.sinusbot.com/resources/ok-library.322/], which is a libary for basic script functions.");
+            ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/ok-library.322/]OKlib[/url], which is a libary for basic script functions.");
         }
     });
     

@@ -1050,6 +1050,7 @@ registerPlugin({
         user: {
             toString: userToString,
             hasPrivileges: userHasPrivileges,
+            hasClientPrivileges: userClientHasPrivileges,
             getClientPrivileges: userGetClientPrivileges,
             isClientUser: userIsClientUser,
             privileges: {

@@ -282,3 +282,68 @@ class track {
      */
     toString(track) { }
 }
+/**
+ * @mixin user
+ */
+class user {
+    /**
+     * Returns a String Representation of a User
+     * @param  {User} user
+     * @return {String}	A String Representation of the given User
+     */
+    toString(user) { }
+    /**
+     * Checks if the Client has access to the given Sinusbot User
+     * @param  {Client} client A Teamspeak Client
+     * @param  {User} user A Sinusbot User
+     * @return {Boolean} Returns true if the User either has a matching UID or the Client is Member of the required ServerGroup
+     */
+    isClientUser(client, user) { }
+    /**
+     * Checks if the Sinusbot User has the required Sinusbot Privileges
+     * @param  {User} user A Sinusbot User
+     * @param  {Integer} privileges The numerical value of the required Privileges
+     * @return {Boolean} Returns true if the Sinusbot User has the required Privileges
+     */
+    hasPrivileges(user) { }
+    /**
+     * Retrieves the Clients Sinusbot Privileges
+     * @param  {Client} client A Teamspeak Client
+     * @return {Integer}  Returns the Privileges as a numerical value
+     */
+    getClientPrivileges(client) { }
+    /**
+     * Checks if the Client has the required Sinusbot Privileges
+     * @param  {Client} client  A Teamspeak Client
+     * @param  {Integer} privileges The numerical value of the required Privileges
+     * @return {Boolean} Returns true if the Client has the required Privileges
+     */
+    hasClientPrivileges(client, privileges) { }
+    /**
+     * @description
+     * Returns the numerical value for a specific privilege
+     * PRIV_LOGIN = 1
+     * PRIV_LIST_FILE = 2
+     * PRIV_UPLOAD_FILE = 4
+     * PRIV_DELETE_FILE = 8
+     * PRIV_EDIT_FILE = 16
+     * PRIV_CREATE_PLAYLIST = 32
+     * PRIV_DELETE_PLAYLIST = 64
+     * PRIV_ADDTO_PLAYLIST = 128
+     * PRIV_STARTSTOP = 256
+     * PRIV_EDITUSERS = 512
+     * PRIV_CHANGENICK = 1024
+     * PRIV_BROADCAST = 2048
+     * PRIV_PLAYBACK = 4096
+     * PRIV_ENQUEUE = 8192
+     * PRIV_ENQUEUENEXT = 16384
+     * PRIV_EDITBOT = 65536
+     * PRIV_EDITINSTANCE = 131072
+     *
+     * @example
+     * var lib = require('OK_lib.js');
+     * var privilege = lib.user.privileges.PRIV_LOGIN;
+     * 
+     */
+    privileges() { }
+}

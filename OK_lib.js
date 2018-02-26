@@ -757,7 +757,9 @@ registerPlugin({
     function arrayCreateArray(element){
         if (!Array.isArray(element)){
             var array = [];
-            array.push(element);
+            if (element){
+                array.push(element);
+            }
             return array;
         }
         else{

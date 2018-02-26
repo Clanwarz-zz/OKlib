@@ -885,10 +885,8 @@ registerPlugin({
         elements = arrayCreateArray(elements);
         var result = [];
         for(var i = 0; i < array.length; i++ ){
-            for(var j = 0; j < elements.length; j++){
-                if (!compare(array[i], elements[j])){
-                    result.push(array[i]);
-                }
+            if (!arrayContainsElement(elements, array[i], compare)){
+                result.push(array[i]);
             }
         }
         log("arrayRemoveElements: Removed '" + (array.length - result.length) + "' elements from the array", 4);

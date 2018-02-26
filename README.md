@@ -1,10 +1,10 @@
-#OKlib
+# OKlib
 
 It's OK to use it
 
 This repository contains the Sinusbot Script Library OKLib and the JSDoc based javascript file from which the documentation can be generated.
 
-##Example
+## Example
 
 Demo Script that explains how to use the OK_lib
 

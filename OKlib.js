@@ -34,7 +34,7 @@ registerPlugin({
     try{
         libLogLevel = config.logLevel;
     }catch(err){
-    
+
     }
 
     if(backend.isConnected()){
@@ -190,6 +190,30 @@ registerPlugin({
      */
     function clientToURLString(client){
         return ("[URL=client://"+client.id()+"/"+client.uid()+"]"+client.nick()+"[/URL]");
+    }
+
+    /**
+     * Parses a TS3-CLient URL string into a Client Object
+     * @param  {String} url THe URL string to parse
+     * @return {Object}     Returns a Client Object or undefined if nothing was found
+     */
+    function clientUrlToClient(url) {
+        if (typeof url !== "string") {
+            return undefined;
+        }
+        var match = url.match(/\[url=client:\/\/(\d+)\/([\w\d\/\+]{27}=)~?(.*)\](.*)?\[\/url\]/i);
+        if (!match) {
+            return undefined;
+        }
+        var client = backend.getClientByID(match[1]);
+        if (client && client.uid() == match[2]) {
+            return client;
+        }
+        client = backend.getClientByUID(match[2]);
+        if(client){
+            return client;
+        }
+        return undefined;
     }
 
     /**
@@ -1029,11 +1053,39 @@ registerPlugin({
     }
 
     /**
+     * Filters an Array for a specifc Attribute value
+     * @param  {Object[]}  array      The Array to filter
+     * @param  {String}  attribute  The Attribute to filter for
+     * @param  {Object}  value      Value to check for
+     * @param  {Boolean} isFunction Flag for comparing function or Attributes of Objects
+     * @param  {Function} compare    A Compare Function that should be used for the Comparison, if not set 'equal' is used
+     * @return {Object[]}             Found Object that matched the value.
+     */
+    function arrayFilterByAttribute(array, attribute, value, isFunction, compare){
+        if (!compare){
+            compare = equal;
+        }
+        var result = [];
+        for (var i = 0; i < array.length; i++){
+            if (isFunction){
+                if(compare(array[i][attribute](), value)){
+                    result.push(array[i]);
+                }
+            }else{
+                if(compare(array[i][attribute], value)){
+                    result.push(array[i]);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Compares an objects property with a specific value
      * @param  {Object} object   Object to check
      * @param  {String} property Name of the Property that should be checked
      * @param  {Object} element  Value that should be compared to the Property
-     * @param  {Function} compare  A Compare Function that should be used for the Comparison, if not set 'equal' is used
+     * @param  {Function} compare    A Compare Function that should be used for the Comparison, if not set 'equal' is used
      * @return {Boolean}   Returns the Value of the Comparison
      */
     function objectFunctionEqualsElement(object, property, element, compare){
@@ -1063,6 +1115,7 @@ registerPlugin({
         client: {
             toString: clientToString,
             toURLString: clientToURLString,
+            urlToClient: clientUrlToClient,
             equal: equalClientObjects,
             filterByClients: clientFilterByClients,
             filterByServerGroups: clientFilterByServerGroups,

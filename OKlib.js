@@ -30,6 +30,12 @@ registerPlugin({
     var activeBotInstances = [];
 
     var version = '1.0.2';
+    var libLogLevel = 1;
+    try{
+        libLogLevel = config.logLevel;
+    }catch(err){
+    
+    }
 
     if(backend.isConnected()){
         var currentInstances = store.get('activeBotInstances');
@@ -79,10 +85,8 @@ registerPlugin({
      * @param  {Integer} logLevel log level of the message to check with the set log level
      */
     function log(message, logLevel){
-        if (config.logLevel >= 0){
-            if (logLevel-1 <= config.logLevel){
-                engine.log(message);
-            }
+        if (logLevel-1 <= libLogLevel){
+            engine.log(message);
         }
     }
 

@@ -1,7 +1,7 @@
 registerPlugin({
     name: 'OK_lib',
     engine: '>= 0.13.37',
-    version: '1.0.2',
+    version: '1.0.3',
     autorun: true,
     description: 'A lib that is OK. For other scripts to use.',
     author: 'Tuetchen || Smorrebrod || Cedrik <cedrik.paetz@gmail.com> & Diesmon || Dimos <dontmindme12@web.de>',
@@ -29,33 +29,34 @@ registerPlugin({
     var backendEngine = engine.getBackend();
     var activeBotInstances = [];
 
-    var version = '1.0.2';
+    var version = '1.0.3';
     var libLogLevel = 1;
     try{
         libLogLevel = config.logLevel;
     }catch(err){
 
     }
-    
-    function registerBot(){
+
+    if(backend.isConnected()){
         var currentInstances = store.get('activeBotInstances');
         if (!currentInstances){
             currentInstances = [];
         }
         log("Registering as active Bot " + printObject(backend.getBotClient()), 5);
-        currentInstances.push({'uid': backend.getBotClient().uid(), 'id': backend.getBotClient().id());
-        currentInstances = arrayCreateSet(currentInstances, function(a,b){return (a.id == b.id && a.uid == b.uid)});
+        currentInstances.push(backend.getBotClient().uid());
+        currentInstances = arrayCreateSet(currentInstances);
         store.set('activeBotInstances', currentInstances);
     }
-
-    if(backend.isConnected()){
-        registerBot();
-    }
-    
     event.on('connect', function() {
-        registerBot();
+        var currentInstances = store.get('activeBotInstances');
+        if (!currentInstances){
+            currentInstances = [];
+        }
+        log("Registering as active Bot " + printObject(backend.getBotClient()), 5);
+        currentInstances.push(backend.getBotClient().uid());
+        currentInstances = arrayCreateSet(currentInstances);
+        store.set('activeBotInstances', currentInstances);
     });
-    
     event.on('chat', function(ev) {
         if (ev.text == "!help" || ev.text == "!info"){
             ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/oklib.325/]OKlib[/url], which is a libary for basic script functions. The full documentation can be found [url=http://server-n2.de/OKlib/external]here[/url]");
@@ -98,8 +99,8 @@ registerPlugin({
         result = [];
         newStore = [];
         for (var i = 0; i < currentInstances.length; i++){
-            var currentClient = backend.getClientByID(currentInstances[i].id);
-            if (currentClient && currentClient.uid() == currentInstances[i].uid){
+            var currentClient = backend.getClientByUniqueID(currentInstances[i]);
+            if (currentClient){
                 log("getActiveBotInstances: Active Bot " + printObject(currentClient) + " found", 5);
                 newStore.push(currentInstances[i]);
                 result.push(currentClient);
@@ -1192,6 +1193,7 @@ registerPlugin({
             removeUndefined: arrayRemoveUndefined,
             parseAttribute: arrayObjectParseAttribute,
             setAttribute: arrayObjectSetAttribute,
+            filterByAttribute: arrayFilterByAttribute,
         },
 
         helper: {

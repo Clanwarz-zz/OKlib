@@ -271,7 +271,8 @@ class client {
     * @param {Client} client The tested Client as a Client Object.
     * @param {ServerGroup[] | Integer[]} checkGroups The Groups that should be checked as an Array of GroupIDs.
     * @returns {Boolean} True if the Client is in all Groups, else False.
-    **/mberOfAll(client, checkGroups) { }
+    **/
+    isMemberOfAll(client, checkGroups) { }
     /**
      * Adds the Client to the given ServerGroups
      * @param  {Client} client

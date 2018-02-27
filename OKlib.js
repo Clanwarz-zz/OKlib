@@ -25,7 +25,7 @@ registerPlugin({
     var format = require('format');
     var helper = require('helpers');
 
-    engine.notify('OK_lib loaded');
+    engine.notify('OKlib loaded');
     var backendEngine = engine.getBackend();
     var activeBotInstances = [];
 

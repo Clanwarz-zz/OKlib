@@ -1,7 +1,7 @@
 registerPlugin({
     name: 'OK_lib',
     engine: '>= 0.13.37',
-    version: '1.0.1',
+    version: '1.0.2',
     autorun: true,
     description: 'A lib that is OK. For other scripts to use.',
     author: 'Tuetchen || Smorrebrod || Cedrik <cedrik.paetz@gmail.com> & Diesmon || Dimos <dontmindme12@web.de>',
@@ -29,7 +29,7 @@ registerPlugin({
     var backendEngine = engine.getBackend();
     var activeBotInstances = [];
 
-    var version = '1.0.1';
+    var version = '1.0.2';
 
     if(backend.isConnected()){
         var currentInstances = store.get('activeBotInstances');
@@ -53,7 +53,7 @@ registerPlugin({
     });
     event.on('chat', function(ev) {
         if (ev.text == "!help" || ev.text == "!info"){
-            ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/ok-library.322/]OKlib[/url], which is a libary for basic script functions. The full documentation can be found [url=http://server-n2.de/OKlib/external]here[/url]");
+            ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/ok-lib.322/]OKlib[/url], which is a libary for basic script functions. The full documentation can be found [url=http://server-n2.de/OKlib/external]here[/url]");
         }
     });
 

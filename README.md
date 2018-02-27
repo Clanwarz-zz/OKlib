@@ -17,9 +17,12 @@ registerPlugin({
     author: 'Author <author@example.com>',
     vars: []
 }, function(sinusbot, config) {
-    event.on('load', function(){
+    require('event').on('load', function(){
         var lib = require('OKlib.js');
-        //Your Code goes here
+        main(lib);
+    });
+    function main(OKlib){
+        //Your code goes here
     }
 });
 ```
@@ -38,5 +41,3 @@ npm install -g documentation
 ```bash
 documentation build api.js --project-name "OKlib" -f html -o documentation
 ```
-
-

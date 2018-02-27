@@ -1,24 +1,24 @@
 /**
  * @description
- * Demo Script that explains how to use the OK_lib
+ * Demo Script that explains how to use the OKlib
  * @example
  * registerPlugin({
  *     name: 'Demo Script',
  *     version: '1.0',
- *     description: 'OK_Lib_Demo',
+ *     description: 'OKlib_Demo',
  *     author: 'Author <author@example.com>',
  *     vars: []
  * }, function(sinusbot, config) {
  *      var event = require('event');
  *      event.on('load', function(){
- *          var lib = require('OK_lib.js');
+ *          var lib = require('OKlib.js');
  *          main(lib);
  *      });
  *      function main(lib) {
  *          //Your code goes here
  *      }
  * });
- * 
+ *
  */
 function registerPlugin() { }
 
@@ -367,7 +367,7 @@ class general {
      * @return {Boolean}  Returns true if the installed version is newer
      */
     checkVersion(wantedVersion){ }
-    
+
     /**
      * Not Implemented Yet
      * TODO: All
@@ -483,9 +483,9 @@ class user {
      * ```
      *
      * @example
-     * var lib = require('OK_lib.js');
+     * var lib = require('OKlib.js');
      * var privilege = lib.user.privileges.PRIV_LOGIN;
-     * 
+     *
      */
     privileges() { }
 }

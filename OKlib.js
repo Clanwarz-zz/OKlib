@@ -36,27 +36,26 @@ registerPlugin({
     }catch(err){
 
     }
-
-    if(backend.isConnected()){
+    
+    function registerBot(){
         var currentInstances = store.get('activeBotInstances');
         if (!currentInstances){
             currentInstances = [];
         }
         log("Registering as active Bot " + printObject(backend.getBotClient()), 5);
-        currentInstances.push(backend.getBotClient().uid());
-        currentInstances = arrayCreateSet(currentInstances);
+        currentInstances.push({'uid': backend.getBotClient().uid(), 'id': backend.getBotClient().id());
+        currentInstances = arrayCreateSet(currentInstances, function(a,b){return (a.id == b.id && a.uid == b.uid)});
         store.set('activeBotInstances', currentInstances);
     }
+
+    if(backend.isConnected()){
+        registerBot();
+    }
+    
     event.on('connect', function() {
-        var currentInstances = store.get('activeBotInstances');
-        if (!currentInstances){
-            currentInstances = [];
-        }
-        log("Registering as active Bot " + printObject(backend.getBotClient()), 5);
-        currentInstances.push(backend.getBotClient().uid());
-        currentInstances = arrayCreateSet(currentInstances);
-        store.set('activeBotInstances', currentInstances);
+        registerBot();
     });
+    
     event.on('chat', function(ev) {
         if (ev.text == "!help" || ev.text == "!info"){
             ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/oklib.325/]OKlib[/url], which is a libary for basic script functions. The full documentation can be found [url=http://server-n2.de/OKlib/external]here[/url]");
@@ -99,8 +98,8 @@ registerPlugin({
         result = [];
         newStore = [];
         for (var i = 0; i < currentInstances.length; i++){
-            var currentClient = backend.getClientByUniqueID(currentInstances[i]);
-            if (currentClient){
+            var currentClient = backend.getClientByID(currentInstances[i].id);
+            if (currentClient && currentClient.uid() == currentInstances[i].uid){
                 log("getActiveBotInstances: Active Bot " + printObject(currentClient) + " found", 5);
                 newStore.push(currentInstances[i]);
                 result.push(currentClient);

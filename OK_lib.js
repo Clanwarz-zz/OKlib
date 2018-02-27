@@ -31,6 +31,16 @@ registerPlugin({
 
     var version = '1.0.1';
 
+    if(backend.isConnected()){
+        var currentInstances = store.get('activeBotInstances');
+        if (!currentInstances){
+            currentInstances = [];
+        }
+        log("Registering as active Bot " + printObject(backend.getBotClient()), 5);
+        currentInstances.push(backend.getBotClient().uid());
+        currentInstances = arrayCreateSet(currentInstances);
+        store.set('activeBotInstances', currentInstances);
+    }
     event.on('connect', function() {
         var currentInstances = store.get('activeBotInstances');
         if (!currentInstances){
@@ -41,14 +51,6 @@ registerPlugin({
         currentInstances = arrayCreateSet(currentInstances);
         store.set('activeBotInstances', currentInstances);
     });
-
-
-    /*
-        General
-    */
-    /**
-    * A chat hook for the native SinusBot !info && !help commands.
-    **/
     event.on('chat', function(ev) {
         if (ev.text == "!help" || ev.text == "!info"){
             ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/ok-library.322/]OKlib[/url], which is a libary for basic script functions. The full documentation can be found [url=http://server-n2.de/OKlib/external]here[/url]");
@@ -726,8 +728,8 @@ registerPlugin({
      * @return {Boolean}  Returns true if the Element is contained in the Array
      */
     function arrayContainsElement(array, element, compare){
-            if (!compare){
-                compare = equal;
+        if (!compare){
+            compare = equal;
         }
         for (var arrayElement in array){
             if (compare(array[arrayElement], element)){
@@ -784,9 +786,9 @@ registerPlugin({
             return result;
         }
         else{
-               for (var i = 0; i < array.length; i++){
-                    if (!arrayContainsElement(result, array[i], compare)){
-                        result.push(array[i]);
+            for (var i = 0; i < array.length; i++){
+                if (!arrayContainsElement(result, array[i], compare)){
+                    result.push(array[i]);
                 }
             }
             return result;
@@ -973,7 +975,7 @@ registerPlugin({
      * @return {Boolean}   Returns true when String b is contained in String a
      */
     function containsIgnoreCase(a, b){
-          if(a.toLowerCase().indexOf(b.toLowerCase()) != -1){
+        if(a.toLowerCase().indexOf(b.toLowerCase()) != -1){
             return true;
         }
         return false;
@@ -998,15 +1000,29 @@ registerPlugin({
     function arrayObjectParseAttribute(array, attribute, isFunction){
         array = arrayCreateArray(array);
         var result = [];
-        for (var object in array){
-              if (isFunction){
-                result.push(array[object][attribute]());
+        for (var i = 0; i < array.length; i++){
+            if (isFunction){
+                result.push(array[i][attribute]());
             }else{
-                result.push(array[object][attribute]);
+                result.push(array[i][attribute]);
             }
         }
-        log("arrayObjectParseAttribute: Found '" + result.length + "' Objects", 4);
+        log("arrayObjectParseAttribute: Parsed '" + result.length + "' Objects", 4);
         return result;
+    }
+
+    /**
+     * Set the Attributes of a object to a new value.
+     * @param  {Object[]}   array     Object to apply Attribute changes to
+     * @param  {String}     attribute The Attribute which should get applied
+     * @param  {Object[] | Object} value     Array or single Object that should be applied. Arrays will get applied in array element order
+     */
+    function arrayObjectSetAttribute(array, attribute, value){
+        array = arrayCreateArray(array);
+        value = arrayCreateArray(array);
+        for (var i = 0; i < array.length; i++){
+            array[i][attribute].apply(null, value);
+        }
     }
 
     /**
@@ -1120,6 +1136,7 @@ registerPlugin({
             removeElements: arrayRemoveElements,
             removeUndefined: arrayRemoveUndefined,
             parseAttribute: arrayObjectParseAttribute,
+            setAttribute: arrayObjectSetAttribute,
         },
 
         helper: {

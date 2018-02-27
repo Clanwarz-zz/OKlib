@@ -53,7 +53,7 @@ registerPlugin({
     });
     event.on('chat', function(ev) {
         if (ev.text == "!help" || ev.text == "!info"){
-            ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/ok-lib.322/]OKlib[/url], which is a libary for basic script functions. The full documentation can be found [url=http://server-n2.de/OKlib/external]here[/url]");
+            ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/oklib.325/]OKlib[/url], which is a libary for basic script functions. The full documentation can be found [url=http://server-n2.de/OKlib/external]here[/url]");
         }
     });
 
@@ -94,14 +94,14 @@ registerPlugin({
         var currentInstances = store.get('activeBotInstances');
         result = [];
         newStore = [];
-        for (var element in currentInstances){
-            var currentClient = backend.getClientByUniqueID(currentInstances[element]);
+        for (var i = 0; i < currentInstances.length; i++){
+            var currentClient = backend.getClientByUniqueID(currentInstances[i]);
             if (currentClient){
                 log("getActiveBotInstances: Active Bot " + printObject(currentClient) + " found", 5);
-                newStore.push(currentInstances[element]);
+                newStore.push(currentInstances[i]);
                 result.push(currentClient);
             }else{
-                log("getActiveBotInstances: Offline Bot " + currentInstances[element] + " removed", 4);
+                log("getActiveBotInstances: Offline Bot " + currentInstances[i] + " removed", 4);
             }
         }
         store.set('activeBotInstances', newStore);
@@ -139,10 +139,10 @@ registerPlugin({
             log("channelGetChannels: Using Channels " + printObject(channels), 5);
         }
         var result = [];
-        for(var curChannel in channels){
-            if(objectFunctionEqualsElement(channels[curChannel], attribute, value, compare)){
-                result.push(channels[curChannel]);
-                log("channelGetChannels: Found Channel " + printObject(channels[curChannel]), 5);
+        for(var i = 0; i < channels.length; i++){
+            if(objectFunctionEqualsElement(channels[i], attribute, value, compare)){
+                result.push(channels[i]);
+                log("channelGetChannels: Found Channel " + printObject(channels[i]), 5);
             }
         }
         return result;
@@ -156,11 +156,11 @@ registerPlugin({
     function channelGetSubchannels(parentChannel){
         var channels = backend.getChannels();
         var result = [];
-        for (var curChannel in channels){
-            curParentChannel = channels[curChannel].parent();
+        for (var i = 0; i < channels.length; i++){
+            curParentChannel = channels[i].parent();
             if (curParentChannel && equal(curParentChannel.id(), parentChannel.id())){
-                result.push(channels[curChannel]);
-                log("channelGetSubchannels: Found Channel " + printObject(channels[curChannel]), 5);
+                result.push(channels[i]);
+                log("channelGetSubchannels: Found Channel " + printObject(channels[i]), 5);
             }
         }
         return result;
@@ -221,10 +221,10 @@ registerPlugin({
             return;
         }
         result = [];
-        for(var curClient in clients){
-            if(!arrayContainsOne(arrayObjectParseAttribute(clients[curClient].getGroups(), id, true), array)){
-                result.push(clients[curClient]);
-                log("clientFilterByServergroup: Found Client " + printObject(clients[curClient]), 5);
+        for(var i = 0; i < clients.length; i++){
+            if(!arrayContainsOne(arrayObjectParseAttribute(clients[i].getGroups(), id, true), array)){
+                result.push(clients[i]);
+                log("clientFilterByServergroup: Found Client " + printObject(clients[i]), 5);
             }
         }
         return result;
@@ -242,9 +242,9 @@ registerPlugin({
             return;
         }
         var result = [];
-        for (var client in clients){
-            result.push(clients[client].uid());
-            log("clientsParseUIDs: Resolved UID '" + clients[client].uid() + "'", 5);
+        for (var i = 0; i < clients.length; i++){
+            result.push(clients[i].uid());
+            log("clientsParseUIDs: Resolved UID '" + clients[i].uid() + "'", 5);
         }
         return result;
     }
@@ -261,14 +261,14 @@ registerPlugin({
             return;
         }
         var result = [];
-        for (var curUID in UIDs){
-            var client = backend.getClientByUID(UIDs[curUID]);
+        for (var i = 0; i < UIDs.length; i++){
+            var client = backend.getClientByUID(UIDs[i]);
             if(client){
                 result.push(client);
-                log("clientsParseClient: Resolved UID '" + UIDs[curUID] + "' to '" + printObject(client) + "'", 5);
+                log("clientsParseClient: Resolved UID '" + UIDs[i] + "' to '" + printObject(client) + "'", 5);
             }
             else{
-                log("clientsParseClient: A client with the UID '" + UIDs[curUID] + "' could not be found on the server", 4);
+                log("clientsParseClient: A client with the UID '" + UIDs[i] + "' could not be found on the server", 4);
             }
         }
         return result;
@@ -304,22 +304,22 @@ registerPlugin({
         }else{
             log("clientSearch: Using equal as comparator", 5);
         }
-        for(var client in clients){
-            clientName = clients[client].name();
+        for(var i = 0; i < clients.length; i++){
+            clientName = clients[i].name();
             if(!caseSensitive){
                 clientName = clientName.toLowerCase();
             }
             if(compare(clientName, stringToParse)){
-                result.push(clients[client]);
-                log("clientSearch: Found a part match between '" + stringToParse + "' and " + printObject(clients[client]), 5);
+                result.push(clients[i]);
+                log("clientSearch: Found a part match between '" + stringToParse + "' and " + printObject(clients[i]), 5);
             }
-            else if(clients[client].uid() == stringToParse){
-                result.push(clients[client]);
-                log("clientSearch: Found a UID match between '" + stringToParse + "' and " + printObject(clients[client]), 5);
+            else if(clients[i].uid() == stringToParse){
+                result.push(clients[i]);
+                log("clientSearch: Found a UID match between '" + stringToParse + "' and " + printObject(clients[i]), 5);
             }
-            else if(clients[client].id() == stringToParse){
-                result.push(clients[client]);
-                log("clientSearch: Found a ID match between '" + stringToParse + "' and " + printObject(clients[client]), 5);
+            else if(clients[i].id() == stringToParse){
+                result.push(clients[i]);
+                log("clientSearch: Found a ID match between '" + stringToParse + "' and " + printObject(clients[i]), 5);
             }
         }
           if(result.length == 0){
@@ -350,10 +350,10 @@ registerPlugin({
             log("clientGetClients: Using Clients " + printObject(clients), 5);
         }
         var result = [];
-        for(var curClient in clients){
-            if(objectFunctionEqualsElement(clients[curClient], attribute, value, compare)){
-                log("clientGetClients: Found Client " + printObject(clients[curClient]), 5);
-                result.push(clients[curClient]);
+        for(var i = 0; i < clients.length; i++){
+            if(objectFunctionEqualsElement(clients[i], attribute, value, compare)){
+                log("clientGetClients: Found Client " + printObject(clients[i]), 5);
+                result.push(clients[i]);
             }
         }
         return result;
@@ -416,13 +416,13 @@ registerPlugin({
             log("clientServerGroupAddToGroups: Provided no Group to add", 3);
             return;
         }
-        for (var curGroup in groups){
-            if (!clientServerGroupsIsMemberOf(client, groups[curGroup])){
-                client.addToServerGroup(groups[curGroup]);
-                log("clientServerGroupAddToGroups: Client '" + printObject(client) + "' was added to the servergroup " + printObject(groups[curGroup]), 5);
+        for (var i = 0; i < groups.length; i++){
+            if (!clientServerGroupsIsMemberOf(client, groups[i])){
+                client.addToServerGroup(groups[i]);
+                log("clientServerGroupAddToGroups: Client '" + printObject(client) + "' was added to the servergroup " + printObject(groups[i]), 5);
             }
             else {
-                log("clientServerGroupAddToGroups: Client '" + printObject(client) + "' already has the servergroup " + printObject(groups[curGroup]), 4);
+                log("clientServerGroupAddToGroups: Client '" + printObject(client) + "' already has the servergroup " + printObject(groups[i]), 4);
             }
         }
     }
@@ -438,13 +438,13 @@ registerPlugin({
             log("clientServerGroupAddToGroups: Provided no group to remove", 3);
             return;
         }
-        for (var curGroup in groups){
-            if (clientServerGroupsIsMemberOf(client, groups[curGroup])){
-                client.removeFromServerGroup(groups[curGroup]);
-                log("clientServerGroupRemoveFromGroups: Client '" + printObject(client) + "' was removed from the servergroup " + printObject(groups[curGroup]), 5);
+        for (var i = 0; i < groups.length; i++){
+            if (clientServerGroupsIsMemberOf(client, groups[i])){
+                client.removeFromServerGroup(groups[i]);
+                log("clientServerGroupRemoveFromGroups: Client '" + printObject(client) + "' was removed from the servergroup " + printObject(groups[i]), 5);
             }
             else {
-                log("clientServerGroupRemoveFromGroups: Client '" + printObject(client) + "' did not had the group " + printObject(groups[curGroup]), 4);
+                log("clientServerGroupRemoveFromGroups: Client '" + printObject(client) + "' did not had the group " + printObject(groups[i]), 4);
             }
         }
     }
@@ -474,12 +474,12 @@ registerPlugin({
     function serverGroupParseIDs(serverGroups){
         serverGroups = arrayCreateArray(serverGroups);
         var result = [];
-        for (var serverGroup in serverGroups){
+        for (var i = 0; i < serverGroups.length; i++){
             if (isNumber(serverGroups[0])){
-                result.push(serverGroups[serverGroup]);
+                result.push(serverGroups[i]);
             }else{
-                result.push(serverGroups[serverGroup].id());
-                log("serverGroupParseIDs: Resolved the servergroup '" + printObject(serverGroups[serverGroup]) + "' to the ID '" + serverGroups[serverGroup].id() + "'", 5);
+                result.push(serverGroups[i].id());
+                log("serverGroupParseIDs: Resolved the servergroup '" + printObject(serverGroups[i]) + "' to the ID '" + serverGroups[i].id() + "'", 5);
             }
         }
         return result;
@@ -493,17 +493,17 @@ registerPlugin({
     function serverGroupParseGroups(groupIDs){
         groupIDs = arrayCreateArray(groupIDs);
         var result = [];
-        for (var curID in groupIDs){
-            if (!isNumber(groupIDs[curID])){
-                result.push(groupIDs[curID]);
+        for (var i = 0; i < groupIDs.length; i++){
+            if (!isNumber(groupIDs[i])){
+                result.push(groupIDs[i]);
             }else{
-                var group = backend.getServerGroupByID(groupIDs[curID]);
+                var group = backend.getServerGroupByID(groupIDs[i]);
                 if (group){
                     result.push(group);
-                    log("serverGroupParseGroups: Resolved the ID '" + groupIDs[curID] + "' to the servergroup " + printObject(group), 5);
+                    log("serverGroupParseGroups: Resolved the ID '" + groupIDs[i] + "' to the servergroup " + printObject(group), 5);
                 }
                 else{
-                    log("serverGroupParseGroups: A servergroup with the ID '" + groupIDs[curID] + "' was not found on the server", 2);
+                    log("serverGroupParseGroups: A servergroup with the ID '" + groupIDs[i] + "' was not found on the server", 2);
                 }
             }
         }
@@ -545,9 +545,9 @@ registerPlugin({
     function userGetClientPrivileges(client){
         var users = engine.getUsers();
         var privileges = 0;
-        for (var userID in users){
-            if (userIsClientUser(client, users[userID])){
-                privileges = privileges | users[userID].privileges();
+        for (var i = 0; i < users.length; i++){
+            if (userIsClientUser(client, users[i])){
+                privileges = privileges | users[i].privileges();
             }
         }
         return privileges;
@@ -675,7 +675,7 @@ registerPlugin({
      */
     function arrayToString(array){
         var result = "[";
-        for (var i=0; i < array.length; i++){
+        for (var i = 0; i < array.length; i++){
             result += printObject(array[i]);
             if (i+1 < array.length){
                 result += ",";
@@ -731,8 +731,8 @@ registerPlugin({
         if (!compare){
             compare = equal;
         }
-        for (var arrayElement in array){
-            if (compare(array[arrayElement], element)){
+        for (var i = 0; i < array.length; i++){
+            if (compare(array[i], element)){
                 return true;
             }
         }
@@ -747,8 +747,8 @@ registerPlugin({
      * @return {Boolean}  Returns true if at least one Element is contained in the given Array
      */
     function arrayContainsOne(array, elements, compare){
-        for (var element in elements){
-            if (arrayContainsElement(array, elements[element], compare)){
+        for (var i = 0; i < elements.length; i++){
+            if (arrayContainsElement(array, elements[i], compare)){
                 return true;
             }
         }
@@ -784,8 +784,7 @@ registerPlugin({
         if (!Array.isArray(array)){
             result.push(array);
             return result;
-        }
-        else{
+        }else{
             for (var i = 0; i < array.length; i++){
                 if (!arrayContainsElement(result, array[i], compare)){
                     result.push(array[i]);
@@ -804,14 +803,14 @@ registerPlugin({
      */
     function arrayDifference(array, elements, compare){
         var result = [];
-        for (var element in elements){
-            if (!arrayContainsElement(array, elements[element], compare)){
-                result.push(elements[element]);
+        for (var i = 0; i < elements.length; i++){
+            if (!arrayContainsElement(array, elements[i], compare)){
+                result.push(elements[i]);
             }
         }
-        for (var arrayElement in array){
-            if (!arrayContainsElement(elements, array[arrayElement], compare)){
-                result.push(array[arrayElement]);
+        for (var j = 0; j < array.length; j++){
+            if (!arrayContainsElement(elements, array[j], compare)){
+                result.push(array[j]);
             }
         }
         return result;
@@ -863,9 +862,9 @@ registerPlugin({
     function arrayMissingElements(array, elements, compare){
         elements = arrayCreateArray(elements);
         var result = [];
-        for (var element in elements){
-            if (!arrayContainsElement(array, elements[element], compare)){
-                result.push(elements[element]);
+        for (var i = 0; i < elements.length; i++){
+            if (!arrayContainsElement(array, elements[i], compare)){
+                result.push(elements[i]);
             }
         }
         log("arrayMissingElements: Found '" + result.length + "' missing entries in the arrays", 4);

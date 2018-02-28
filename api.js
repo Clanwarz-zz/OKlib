@@ -30,7 +30,7 @@ class array {
     /**
      * Returns a String Representation of an Array
      * @param  {Object[]} array
-     * @return {String}	A String Representation of the given Array
+     * @return {String}	String Representation of the given Array
      */
     toString(array) { }
     /**

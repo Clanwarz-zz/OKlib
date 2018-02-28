@@ -4,7 +4,7 @@ registerPlugin({
     version: '1.0.3',
     autorun: true,
     description: 'A lib that is OK. For other scripts to use.',
-    author: 'Tuetchen || Smorrebrod || Cedrik <cedrik.paetz@gmail.com> & Diesmon || Dimos <dontmindme12@web.de>',
+    author: 'Tuetchen || Smorrebrod || Cedrik <cedrik.paetz@gmail.com> && Diesmon || Dimos <dontmindme12@web.de>',
     vars: [
         {
             name: 'logLevel',
@@ -167,7 +167,7 @@ registerPlugin({
         }
         var result = [];
         for (var i = 0; i < channels.length; i++){
-            curParentChannel = channels[i].parent();
+            var curParentChannel = channels[i].parent();
             if (curParentChannel && equal(curParentChannel.id(), parentChannel.id())){
                 result.push(channels[i]);
                 log("channelGetSubchannels: Found Channel " + printObject(channels[i]), 5);

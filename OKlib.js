@@ -356,13 +356,6 @@ registerPlugin({
                 log("clientSearch: Found a ID match between '" + stringToParse + "' and " + printObject(clients[i]), 5);
             }
         }
-          if(result.length == 0){
-            log("clientSearch: Found no matching client", 4);
-            return result;
-        }else if(result.length == 1){
-            log("clientSearch: Found '1' matching client", 4);
-            return result[0];
-        }
         log("clientSearch: Found '" + result.length + "' matching clients", 4);
         return result;
     }

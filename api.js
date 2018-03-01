@@ -225,7 +225,7 @@ class client {
      * @param  {Boolean} partMatch     Optional: Flag for using Part matching. If not provided Attribute and Value will be checked for equality (==)[Not optional if the Case Sensitive flag was set]
      * @param  {Boolean} caseSensitive Optional: Flag for using Case Sensitive search. If not provided Cases will be ignored [Not Optional if the Client Searchpool got provided]
      * @param  {Client[]} clients       Optional: The Client Searchpool. If not provided all clients will get used
-     * @return {Client[] | Client}                A empty Array if nothing was found. A Client Object if only one matching Client was found or a Client Array if more than one matching Client was found.
+     * @return {Client[]}   Returns an Array containing the found Clients.
      */
     search(stringToParse, partMatch, caseSensitive, clients) { }
     /**

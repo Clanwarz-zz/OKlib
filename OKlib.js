@@ -314,7 +314,7 @@ registerPlugin({
      * @param  {Boolean} partMatch     Optional: Flag for using Part matching. If not provided Attribute and Value will be checked for equality (==)[Not optional if the Case Sensitive flag was set]
      * @param  {Boolean} caseSensitive Optional: Flag for using Case Sensitive search. If not provided Cases will be ignored [Not Optional if the Client Searchpool got provided]
      * @param  {Client[]} clients       Optional: The Client Searchpool. If not provided all clients will get used
-     * @return {Client[] | Client}                A empty Array if nothing was found. A Client Object if only one matching Client was found or a Client Array if more than one matching Client was found.
+     * @return {Client[]}               Returns a Array with al lfound client objects. Empty if nothing was found
      */
     function clientSearch(stringToParse, partMatch, caseSensitive, clients){
         if(!clients){
@@ -356,12 +356,9 @@ registerPlugin({
                 log("clientSearch: Found a ID match between '" + stringToParse + "' and " + printObject(clients[i]), 5);
             }
         }
-          if(result.length == 0){
+        if(result.length == 0){
             log("clientSearch: Found no matching client", 4);
             return result;
-        }else if(result.length == 1){
-            log("clientSearch: Found '1' matching client", 4);
-            return result[0];
         }
         log("clientSearch: Found '" + result.length + "' matching clients", 4);
         return result;
@@ -483,9 +480,21 @@ registerPlugin({
         }
     }
 
-      /*
+    /*
         Strings
     */
+
+    /**
+     * Checks if a string is a valid UID
+     * @param  {String} string String to check for UID
+     * @return {Boolean}        Retursn ture or false depending if the String matches a UID or not
+     */
+    function stringMatchUID(string){
+        if(backendEngine == "ts3"){
+            return string.match(/(^[\w\d\/\+]{27}=$)/g);
+        }
+        return false;
+    }
 
     /*
         Group
@@ -1024,6 +1033,15 @@ registerPlugin({
     }
 
     /**
+     * Checks if input is a valid integer number
+     * @param  {Number}  value Number to check for integer
+     * @return {Boolean}       Returns true of false
+     */
+    function isInt(value) {
+        return !isNaN(value) && parseInt(Number(value)) == value && !isNaN(parseInt(value, 10));
+    }
+
+    /**
      * Parse an Array of Objects to an Array of a single chosen Properties
      * @param  {Object[]}  array      Array to Parse
      * @param  {String}  attribute  Name of the Property that should be parsed
@@ -1106,6 +1124,8 @@ registerPlugin({
     */
 
     var libModule = {
+        log: log,
+
         general: {
             checkVersion: checkVersion,
             log: log,
@@ -1147,6 +1167,10 @@ registerPlugin({
             toString: groupToString,
             toIDs: serverGroupParseIDs,
             toGroups: serverGroupParseGroups,
+        },
+
+        string: {
+            matchUID: stringMatchUID,
         },
 
         user: {
@@ -1205,6 +1229,7 @@ registerPlugin({
         helper: {
             printObject: printObject,
             isNumber: isNumber,
+            isInt: isInt,
             objectFunctionEqualsElement: objectFunctionEqualsElement,
         },
 

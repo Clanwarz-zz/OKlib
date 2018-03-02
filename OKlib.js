@@ -250,7 +250,7 @@ registerPlugin({
      */
     function clientFilterByServerGroups(clients, array){
         clients = arrayCreateArray(clients);
-        if(client.length == 0){
+        if(clients.length == 0){
             log("clientFilterByServergroup: Provided no Client to filter for", 3);
             return;
         }

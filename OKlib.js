@@ -1,7 +1,7 @@
 registerPlugin({
     name: 'OK_lib',
     engine: '>= 0.13.37',
-    version: '1.0.4',
+    version: '1.0.5',
     autorun: true,
     description: 'A lib that is OK. For other scripts to use.',
     author: 'Tuetchen || Smorrebrod || Cedrik <cedrik.paetz@gmail.com> && Diesmon || Dimos <dontmindme12@web.de>',
@@ -29,7 +29,7 @@ registerPlugin({
     var backendEngine = engine.getBackend();
     var activeBotInstances = [];
 
-    var version = '1.0.4';
+    var version = '1.0.5';
     var libLogLevel = 1;
     try{
         libLogLevel = config.logLevel;
@@ -47,7 +47,7 @@ registerPlugin({
         currentInstances = arrayCreateSet(currentInstances);
         store.set('activeBotInstances', currentInstances);
     }
-    
+
     event.on('connect', function() {
         var currentInstances = store.get('activeBotInstances');
         if (!currentInstances){

@@ -1007,6 +1007,19 @@ registerPlugin({
     function isNumber(number){
         return !isNaN(number);
     }
+    
+    /**
+     * Simple Password Generator
+     * @param  {number}  length Password Length
+     * @return {String}    Returns a Password with the specified Length
+     */
+    function generatePassword(length){
+        var result = "";
+        var charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        for( var i=0; i < length; i++ )
+            result += charset.charAt(Math.floor(Math.random() * charset.length));
+        return result;
+    }
 
     /**
      * Checks if input is a valid integer number
@@ -1202,6 +1215,7 @@ registerPlugin({
         },
 
         helper: {
+            generatePassword: generatePassword,
             printObject: printObject,
             isNumber: isNumber,
             isInt: isInt,

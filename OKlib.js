@@ -1,7 +1,7 @@
 registerPlugin({
     name: 'OK_lib',
     engine: '>= 0.13.37',
-    version: '1.0.3',
+    version: '1.0.4',
     autorun: true,
     description: 'A lib that is OK. For other scripts to use.',
     author: 'Tuetchen || Smorrebrod || Cedrik <cedrik.paetz@gmail.com> && Diesmon || Dimos <dontmindme12@web.de>',
@@ -29,7 +29,7 @@ registerPlugin({
     var backendEngine = engine.getBackend();
     var activeBotInstances = [];
 
-    var version = '1.0.3';
+    var version = '1.0.4';
     var libLogLevel = 1;
     try{
         libLogLevel = config.logLevel;
@@ -47,6 +47,7 @@ registerPlugin({
         currentInstances = arrayCreateSet(currentInstances);
         store.set('activeBotInstances', currentInstances);
     }
+    
     event.on('connect', function() {
         var currentInstances = store.get('activeBotInstances');
         if (!currentInstances){
@@ -243,28 +244,6 @@ registerPlugin({
     }
 
     /**
-     * Filters a Client-array by Servergroups
-     * @param  {Client[]} clients The Clients
-     * @param  {Client[]} array   The Servergroups for filtering Clients out of the have one of them
-     * @return {Client[]}         The new Clients
-     */
-    function clientFilterByServerGroups(clients, array){
-        clients = arrayCreateArray(clients);
-        if(clients.length == 0){
-            log("clientFilterByServergroup: Provided no Client to filter for", 3);
-            return;
-        }
-        result = [];
-        for(var i = 0; i < clients.length; i++){
-            if(!arrayContainsOne(arrayObjectParseAttribute(clients[i].getGroups(), id, true), array)){
-                result.push(clients[i]);
-                log("clientFilterByServergroup: Found Client " + printObject(clients[i]), 5);
-            }
-        }
-        return result;
-    }
-
-    /**
      * Parses Client Objects into String UIDs and returns a Array of UIDs
      * @param  {Client[]} clients The Clients to parse
      * @return {String[]}         Array of parsed UID Strings
@@ -314,7 +293,7 @@ registerPlugin({
      * @param  {Boolean} partMatch     Optional: Flag for using Part matching. If not provided Attribute and Value will be checked for equality (==)[Not optional if the Case Sensitive flag was set]
      * @param  {Boolean} caseSensitive Optional: Flag for using Case Sensitive search. If not provided Cases will be ignored [Not Optional if the Client Searchpool got provided]
      * @param  {Client[]} clients       Optional: The Client Searchpool. If not provided all clients will get used
-     * @return {Client[] | Client}                A empty Array if nothing was found. A Client Object if only one matching Client was found or a Client Array if more than one matching Client was found.
+     * @return {Client[]}               Returns a Array with al lfound client objects. Empty if nothing was found
      */
     function clientSearch(stringToParse, partMatch, caseSensitive, clients){
         if(!clients){
@@ -476,9 +455,21 @@ registerPlugin({
         }
     }
 
-      /*
+    /*
         Strings
     */
+
+    /**
+     * Checks if a string is a valid UID
+     * @param  {String} string String to check for UID
+     * @return {Boolean}        Retursn ture or false depending if the String matches a UID or not
+     */
+    function stringMatchUID(string){
+        if(backendEngine == "ts3"){
+            return string.match(/(^[\w\d\/\+]{27}=$)/g);
+        }
+        return false;
+    }
 
     /*
         Group
@@ -1017,6 +1008,15 @@ registerPlugin({
     }
 
     /**
+     * Checks if input is a valid integer number
+     * @param  {Number}  value Number to check for integer
+     * @return {Boolean}       Returns true of false
+     */
+    function isInt(value) {
+        return !isNaN(value) && parseInt(Number(value)) == value && !isNaN(parseInt(value, 10));
+    }
+
+    /**
      * Parse an Array of Objects to an Array of a single chosen Properties
      * @param  {Object[]}  array      Array to Parse
      * @param  {String}  attribute  Name of the Property that should be parsed
@@ -1099,6 +1099,8 @@ registerPlugin({
     */
 
     var libModule = {
+        log: log,
+
         general: {
             checkVersion: checkVersion,
             log: log,
@@ -1117,7 +1119,6 @@ registerPlugin({
             urlToClient: clientUrlToClient,
             equal: equalClientObjects,
             filterByClients: clientFilterByClients,
-            filterByServerGroups: clientFilterByServerGroups,
             toUIDs: clientParseUIDs,
             parseFromUIDs: clientParseClients,
             getClients: clientGetClients,
@@ -1140,6 +1141,10 @@ registerPlugin({
             toString: groupToString,
             toIDs: serverGroupParseIDs,
             toGroups: serverGroupParseGroups,
+        },
+
+        string: {
+            matchUID: stringMatchUID,
         },
 
         user: {
@@ -1198,6 +1203,7 @@ registerPlugin({
         helper: {
             printObject: printObject,
             isNumber: isNumber,
+            isInt: isInt,
             objectFunctionEqualsElement: objectFunctionEqualsElement,
         },
 

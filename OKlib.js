@@ -154,11 +154,12 @@ registerPlugin({
 
     /**
      * Returns all Subchannels of a given Channel
-     * @param  {Channel} parentChannel The Channel to return the Subchannels of
+     * @param  {Channel} parentChannel The Channel or channelID of the Channel to return the Subchannels of
      * @param  {Channel[]} channels  Optional: The Channel Searchpool. If not provided all Channels will get used
      * @return {Channel[]}               Array of all Subchannels from the given Channel
      */
     function channelGetSubchannels(parentChannel, channels){
+        var parentChannelID = (isNumber(parentChannel)) ? parentChannel : parentChannel.id();
         if(!channels){
             log("channelGetSubchannels: Using all Channels", 5);
             channels = backend.getChannels();
@@ -169,7 +170,7 @@ registerPlugin({
         var result = [];
         for (var i = 0; i < channels.length; i++){
             var curParentChannel = channels[i].parent();
-            if (curParentChannel && equal(curParentChannel.id(), parentChannel.id())){
+            if (curParentChannel && equal(curParentChannel.id(), parentChannelID)){
                 result.push(channels[i]);
                 log("channelGetSubchannels: Found Channel " + printObject(channels[i]), 5);
             }

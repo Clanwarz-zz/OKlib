@@ -47,6 +47,7 @@ registerPlugin({
         currentInstances = arrayCreateSet(currentInstances);
         store.set('activeBotInstances', currentInstances);
     }
+    
     event.on('connect', function() {
         var currentInstances = store.get('activeBotInstances');
         if (!currentInstances){
@@ -240,28 +241,6 @@ registerPlugin({
      */
     function clientFilterByClients(clients, array){
         return arrayRemoveElements(clients, array, equalClientObjects);
-    }
-
-    /**
-     * Filters a Client-array by Servergroups
-     * @param  {Client[]} clients The Clients
-     * @param  {Client[]} array   The Servergroups for filtering Clients out of the have one of them
-     * @return {Client[]}         The new Clients
-     */
-    function clientFilterByServerGroups(clients, array){
-        clients = arrayCreateArray(clients);
-        if(client.length == 0){
-            log("clientFilterByServergroup: Provided no Client to filter for", 3);
-            return;
-        }
-        result = [];
-        for(var i = 0; i < clients.length; i++){
-            if(!arrayContainsOne(arrayObjectParseAttribute(clients[i].getGroups(), id, true), array)){
-                result.push(clients[i]);
-                log("clientFilterByServergroup: Found Client " + printObject(clients[i]), 5);
-            }
-        }
-        return result;
     }
 
     /**
@@ -1140,7 +1119,6 @@ registerPlugin({
             urlToClient: clientUrlToClient,
             equal: equalClientObjects,
             filterByClients: clientFilterByClients,
-            filterByServerGroups: clientFilterByServerGroups,
             toUIDs: clientParseUIDs,
             parseFromUIDs: clientParseClients,
             getClients: clientGetClients,

@@ -1,7 +1,7 @@
 registerPlugin({
-    name: 'OK_lib',
+    name: 'OKlib',
     engine: '>= 0.13.37',
-    version: '1.0.6',
+    version: '1.0.7',
     autorun: true,
     description: 'A lib that is OK. For other scripts to use.',
     author: 'Tuetchen || Smorrebrod || Cedrik <cedrik.paetz@gmail.com> && Diesmon || Dimos <dontmindme12@web.de>',
@@ -29,7 +29,7 @@ registerPlugin({
     var backendEngine = engine.getBackend();
     var activeBotInstances = [];
 
-    var version = '1.0.6';
+    var version = '1.0.7';
     var libLogLevel = 1;
     try{
         libLogLevel = config.logLevel;
@@ -126,14 +126,14 @@ registerPlugin({
         return ("["+channel.id()+": "+channel.name()+"]");
     }
 
-      /**
-       * Returns a array of Channels which meet the provided criterias
-       * @param  {String} attribute The Attribute to search for. E.g. 'name' or 'id'
-       * @param  {String} value     The Value that should get compared with the Attribute
-       * @param  {Channel[]} channels  Optional: The Channel Searchpool. If not provided all Channels will get used [Not Optional if compare gets provided]
-       * @param  {Function} compare   Optional: A Function for how to compare the Value with the Attribute. If not provided Value and Attribute will get checked for equality
-       * @return {Channel[]}           The Channels that matches the criterias
-       */
+    /**
+    * Returns a array of Channels which meet the provided criterias
+    * @param  {String} attribute The Attribute to search for. E.g. 'name' or 'id'
+    * @param  {String} value     The Value that should get compared with the Attribute
+    * @param  {Channel[]} channels  Optional: The Channel Searchpool. If not provided all Channels will get used [Not Optional if compare gets provided]
+    * @param  {Function} compare   Optional: A Function for how to compare the Value with the Attribute. If not provided Value and Attribute will get checked for equality
+    * @return {Channel[]}           The Channels that matches the criterias
+    */
     function channelGetChannels(attribute, value, channels, compare){
         if(!channels){
             log("channelGetChannels: Using all Channels", 5);
@@ -153,29 +153,115 @@ registerPlugin({
     }
 
     /**
-     * Returns all Subchannels of a given Channel
+     * Returns the Subchannels of a given Channel
      * @param  {Channel} parentChannel The Channel or channelID of the Channel to return the Subchannels of
      * @param  {Channel[]} channels  Optional: The Channel Searchpool. If not provided all Channels will get used
-     * @return {Channel[]}               Array of all Subchannels from the given Channel
+     * @return {Channel[]}               Array of the Subchannels from the given Channel
      */
-    function channelGetSubchannels(parentChannel, channels){
+    function channelGetSubChannels(parentChannel, channels) {
         var parentChannelID = (isNumber(parentChannel)) ? parentChannel : parentChannel.id();
         if(!channels){
-            log("channelGetSubchannels: Using all Channels", 5);
+            log("channel.getSubChannels: Using all Channels", 5);
             channels = backend.getChannels();
         }else{
             channels = arrayCreateArray(channels);
-            log("channelGetSubchannels: Using Channels " + printObject(channels), 5);
+            log("channel.getSubChannels: Using Channels " + printObject(channels), 5);
         }
         var result = [];
-        for (var i = 0; i < channels.length; i++){
+        for (var i = 0; i < channels.length; i++) {
             var curParentChannel = channels[i].parent();
             if (curParentChannel && equal(curParentChannel.id(), parentChannelID)){
                 result.push(channels[i]);
-                log("channelGetSubchannels: Found Channel " + printObject(channels[i]), 5);
+                log("channel.getSubChannels: Found Channel " + printObject(channels[i]), 5);
             }
         }
         return result;
+    }
+
+    /**
+     * Returns all Subchannels of a given Channel (this includes Subchannels of Subchannels)
+     * @param  {Channel} parentChannel The Channel or channelID of the Channel to return all Subchannels of
+     * @return {Channel[]}               Array of all Subchannels from the given Channel
+     */
+    function channelGetAllSubChannels(parentChannel) {
+        if (isNumber(parentChannel)) {
+            parentChannel = backen.getChannelByID(parentChannel)
+            if (!parentChannel) {
+                log("channel.getAllSubChannels: The provided channel ID does not exist on the server", 3)
+                return
+            }
+        }
+		var parents = [parentChannel]
+		var channels = []
+		while (parents.length != 0) {
+      		var parent = parents.pop()
+     		channels.push(parent)
+            parents = parents.concat(channelGetSubChannels(parent));
+    	}
+        log("channel.getAllSubChannels: Found " + channels.length + " subchannels for the channel " + printObject(parentChannel), 5);
+  		return channels.slice(1)
+    }
+
+    function channelIsSubChannelOf(parentChannel, subChannel) {
+        if (isNumber(parentChannel)) {
+            parentChannel = backen.getChannelByID(parentChannel)
+            if (!parentChannel) {
+                log("channel.isSubChannelOf: The provided channel ID does not exist on the server", 3)
+                return false
+            }
+        }
+        var parent = subChannel.parent()
+        while(parent){
+            if (parent && parnet.id() == parentChannel.id()) {
+                log("channel.isSubChannelOf: " + printObject(subChannel) + " is a subchannel of " + printObject(parentChannel), 4)
+                return true
+            }
+            parent = parent.parent()
+        }
+        log("channel.isSubChannelOf: " + printObject(subChannel) + " is not a subchannel of " + printObject(parentChannel), 4)
+        return false
+    }
+
+    function channelgetRelativDepth(parentChannel, subChannel) {
+        if (isNumber(parentChannel)) {
+            parentChannel = backen.getChannelByID(parentChannel)
+            if (!parentChannel) {
+                log("channel.subChannelDepth: The provided channel ID does not exist on the server", 3)
+                return false
+            }
+        }
+        var depth = 0
+        var parent = subChannel.parent()
+        while(parent){
+            depth++
+            if (parent && parnet.id() == parentChannel.id()) {
+                log("channel.subChannelDepth: " + printObject(subChannel) + " is a subchannel of " + printObject(parentChannel) + "with a depth of " + depth, 4)
+                return depth
+            }
+            parent = parent.parent()
+        }
+        log("channel.subChannelDepth: " + printObject(subChannel) + " is not a subchannel of " + printObject(parentChannel), 4)
+        return 0
+    }
+
+    function channelgetAbsolutDepth(channel) {
+    	var depth = 0
+        var parent = channel.parent()
+        while (parent) {
+        	depth++
+          	parent = parent.parent()
+        }
+      	return depth
+    }
+
+    /**
+     * Compares two Channels against each other and decied if they are the same Channel or not (Equal)
+     * @param  {Client} firstChannel
+     * @param  {Client} secondChannel
+     * @return {Boolean}              True or False, depending if the Channels are equal or not.
+     */
+    function equalChannelObjects(firstChannel, secondChannel){
+        return firstChannel.equals(secondChannel);
     }
 
     /*
@@ -202,7 +288,7 @@ registerPlugin({
 
     /**
      * Parses a TS3-CLient URL string into a Client Object
-     * @param  {String} url THe URL string to parse
+     * @param  {String} url The URL string to parse
      * @return {Object}     Returns a Client Object or undefined if nothing was found
      */
     function clientUrlToClient(url) {
@@ -421,7 +507,7 @@ registerPlugin({
         groups = arrayCreateArray(groups);
         if(groups.length == 0){
             log("clientServerGroupAddToGroups: Provided no Group to add", 3);
-            return;
+            return false;
         }
         for (var i = 0; i < groups.length; i++){
             if (!clientServerGroupsIsMemberOf(client, groups[i])){
@@ -1117,14 +1203,21 @@ registerPlugin({
 
         general: {
             checkVersion: checkVersion,
+            checkForUpdates: checkForUpdates,
             log: log,
             getBots: getActiveBotInstances,
         },
 
         channel: {
+            equal: equalChannelObjects,
             toString: channelToString,
             getChannels: channelGetChannels,
-            getSubchannels: channelGetSubchannels,
+            getSubchannels: channelGetSubChannels,
+            getSubChannels: channelGetSubChannels,
+            getAllSubChannels: channelGetAllSubChannels,
+            isSubChannelOf: channelIsSubChannelOf,
+            getRelativDepth: channelgetRelativDepth,
+            getAbsolutDepth: channelgetAbsolutDepth,
         },
 
         client: {

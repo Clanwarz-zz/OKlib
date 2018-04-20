@@ -185,73 +185,73 @@ registerPlugin({
      */
     function channelGetAllSubChannels(parentChannel) {
         if (isNumber(parentChannel)) {
-            parentChannel = backen.getChannelByID(parentChannel)
+            parentChannel = backen.getChannelByID(parentChannel);
             if (!parentChannel) {
-                log("channel.getAllSubChannels: The provided channel ID does not exist on the server", 3)
-                return
+                log("channel.getAllSubChannels: The provided channel ID does not exist on the server", 3);
+                return [];
             }
         }
-		var parents = [parentChannel]
-		var channels = []
+		var parents = [parentChannel];
+		var channels = [];
 		while (parents.length != 0) {
-      		var parent = parents.pop()
-     		channels.push(parent)
+      		var parent = parents.pop();
+     		channels.push(parent);
             parents = parents.concat(channelGetSubChannels(parent));
     	}
         log("channel.getAllSubChannels: Found " + channels.length + " subchannels for the channel " + printObject(parentChannel), 5);
-  		return channels.slice(1)
+  		return channels.slice(1);
     }
 
     function channelIsSubChannelOf(parentChannel, subChannel) {
         if (isNumber(parentChannel)) {
-            parentChannel = backen.getChannelByID(parentChannel)
+            parentChannel = backen.getChannelByID(parentChannel);
             if (!parentChannel) {
-                log("channel.isSubChannelOf: The provided channel ID does not exist on the server", 3)
-                return false
+                log("channel.isSubChannelOf: The provided channel ID does not exist on the server", 3);
+                return false;
             }
         }
-        var parent = subChannel.parent()
+        var parent = subChannel.parent();
         while(parent){
             if (parent && parnet.id() == parentChannel.id()) {
-                log("channel.isSubChannelOf: " + printObject(subChannel) + " is a subchannel of " + printObject(parentChannel), 4)
-                return true
+                log("channel.isSubChannelOf: " + printObject(subChannel) + " is a subchannel of " + printObject(parentChannel), 4);
+                return true;
             }
-            parent = parent.parent()
+            parent = parent.parent();
         }
-        log("channel.isSubChannelOf: " + printObject(subChannel) + " is not a subchannel of " + printObject(parentChannel), 4)
-        return false
+        log("channel.isSubChannelOf: ;" + printObject(subChannel) + " is not a subchannel of " + printObject(parentChannel), 4);
+        return false;
     }
 
     function channelgetRelativDepth(parentChannel, subChannel) {
         if (isNumber(parentChannel)) {
-            parentChannel = backen.getChannelByID(parentChannel)
+            parentChannel = backen.getChannelByID(parentChannel);
             if (!parentChannel) {
-                log("channel.subChannelDepth: The provided channel ID does not exist on the server", 3)
-                return false
+                log("channel.subChannelDepth: The provided channel ID does not exist on the server", 3);
+                return false;
             }
         }
-        var depth = 0
-        var parent = subChannel.parent()
+        var depth = 0;
+        var parent = subChannel.parent();
         while(parent){
-            depth++
+            depth++;
             if (parent && parnet.id() == parentChannel.id()) {
-                log("channel.subChannelDepth: " + printObject(subChannel) + " is a subchannel of " + printObject(parentChannel) + "with a depth of " + depth, 4)
-                return depth
+                log("channel.subChannelDepth: " + printObject(subChannel) + " is a subchannel of " + printObject(parentChannel) + "with a depth of " + depth, 4);
+                return depth;
             }
-            parent = parent.parent()
+            parent = parent.parent();
         }
-        log("channel.subChannelDepth: " + printObject(subChannel) + " is not a subchannel of " + printObject(parentChannel), 4)
-        return 0
+        log("channel.subChannelDepth: " + printObject(subChannel) + " is not a subchannel of " + printObject(parentChannel), 4);
+        return 0;
     }
 
     function channelgetAbsolutDepth(channel) {
-    	var depth = 0
-        var parent = channel.parent()
+    	var depth = 0;
+        var parent = channel.parent();
         while (parent) {
-        	depth++
-          	parent = parent.parent()
+        	depth++;
+          	parent = parent.parent();
         }
-      	return depth
+      	return depth;
     }
 
     /**

@@ -218,7 +218,7 @@ registerPlugin({
             }
             parent = parent.parent();
         }
-        log("channel.isSubChannelOf: ;" + printObject(subChannel) + " is not a subchannel of " + printObject(parentChannel), 4);
+        log("channel.isSubChannelOf: " + printObject(subChannel) + " is not a subchannel of " + printObject(parentChannel), 4);
         return false;
     }
 

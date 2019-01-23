@@ -1,8 +1,8 @@
 # OKlib
 
-It's OK to use it
+It's OK
 
-This repository contains the [Sinusbot](https://www.sinusbot.com/) Script Library OKlib and the JSDoc based javascript file from which the [documentation](http://www.server-n2.de/OKlib/external) can be generated.
+This repository contains the [SinusBot](https://www.sinusbot.com/) Script Library OKlib and the JSDoc based javascript file from which the [documentation](http://www.server-n2.de/OKlib/external) can be generated.
 
 ## Example
 
@@ -23,13 +23,14 @@ registerPlugin({
     });
     function main(OKlib){
         //Your code goes here
+        //use lib functions now with OKlib.functionName()
     }
 });
 ```
 
 ## Build
 
-If you want to build the documentation files follow the next steps
+If you want to build the documentation files follow these steps
 
 ### Install [documentation.js](https://github.com/documentationjs/documentation)
 

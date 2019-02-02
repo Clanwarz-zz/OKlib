@@ -59,7 +59,7 @@ registerPlugin({
 
     event.on('chat', function (ev) {
         if (ev.text === "!help" || ev.text === "!info") {
-            ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/oklib.325/]OKlib[/url], which is a libary for basic script functions. The full documentation can be found [url=http://server-n2.de/OKlib/external]here[/url]");
+            ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/oklib.325/]OKlib[/url], which is a library for basic script functions. The full documentation can be found [url=http://server-n2.de/OKlib/external]here[/url]");
         }
     });
 
@@ -129,9 +129,9 @@ registerPlugin({
      * Returns a array of Channels which meet the provided criterias
      * @param  {String} attribute The Attribute to search for. E.g. 'name' or 'id'
      * @param  {String} value     The Value that should get compared with the Attribute
-     * @param  {Channel[]} channels  Optional: The Channel Searchpool. If not provided all Channels will get used [Not Optional if compare gets provided]
+     * @param  {Channel[]} channels  Optional: Channel searchpool. If not provided all Channels will get used [Not Optional if compare gets provided]
      * @param  {Function} compare   Optional: A Function for how to compare the Value with the Attribute. If not provided Value and Attribute will get checked for equality
-     * @return {Channel[]}           The Channels that matches the criterias
+     * @return {Channel[]}           Channels that matches the criterias
      */
     function channelGetChannels(attribute, value, channels, compare) {
         if (!channels) {
@@ -152,9 +152,20 @@ registerPlugin({
     }
 
     /**
+     * Returns the default channel as an channel-object
+     * @return {Channel}           Default channel on the server. Or undefined if non is found.
+     */
+    function channelGetDefault() {
+        let defaultChannel = backend.getChannels().find(channel => {
+            return channel.isDefault()
+        })
+        return defaultChannel
+    }
+
+    /**
      * Returns the Subchannels of a given Channel
      * @param  {Channel} parentChannel The Channel or channelID of the Channel to return the Subchannels of
-     * @param  {Channel[]} channels  Optional: The Channel Searchpool. If not provided all Channels will get used
+     * @param  {Channel[]} [channels]  Optional: The Channel Searchpool. If not provided all Channels will get used
      * @return {Channel[]}               Array of the Subchannels from the given Channel
      */
     function channelGetSubChannels(parentChannel, channels) {
@@ -179,7 +190,7 @@ registerPlugin({
 
     /**
      * Returns all Subchannels of a given Channel (this includes Subchannels of Subchannels)
-     * @param  {Channel} parentChannel The Channel or channelID of the Channel to return all Subchannels of
+     * @param  {Channel | Integer | String} parentChannel The Channel or channelID of the Channel to return all Subchannels of
      * @return {Channel[]}               Array of all Subchannels from the given Channel
      */
     function channelGetAllSubChannels(parentChannel) {
@@ -221,7 +232,7 @@ registerPlugin({
         return false;
     }
 
-    function channelgetRelativeDepth(parentChannel, subChannel) {
+    function channelGetRelativeDepth(parentChannel, subChannel) {
         if (isNumber(parentChannel)) {
             parentChannel = backend.getChannelByID(parentChannel);
             if (!parentChannel) {
@@ -243,7 +254,7 @@ registerPlugin({
         return 0;
     }
 
-    function channelgetAbsoluteDepth(channel) {
+    function channelGetAbsoluteDepth(channel) {
         let depth = 0;
         let parent = channel.parent();
         while (parent) {
@@ -873,7 +884,7 @@ registerPlugin({
     /**
      * Creates a Set of the given Array, removing any Duplicates
      * @param  {Object[]} array
-     * @param  {Function} compare A Compare Function that should be used for the Comparison, if not set 'equal' is used
+     * @param  {Function} [compare=equal] - Compare function that should be used for the comparison. Default is 'equal'
      * @return {Object[]}  The Set representation of the given Array
      */
     function arrayCreateSet(array, compare) {
@@ -1201,6 +1212,7 @@ registerPlugin({
         channel: {
             equal: equalChannelObjects,
             toString: channelToString,
+            getDefault: channelGetDefault,
             getChannels: channelGetChannels,
             getSubchannels: channelGetSubChannels, //legacy
             getSubChannels: channelGetSubChannels,

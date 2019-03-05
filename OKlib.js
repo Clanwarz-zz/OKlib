@@ -95,11 +95,11 @@ registerPlugin({
      * @return {Client[]} Returns all found Bot clients in a Array
      */
     function getActiveBotInstances() {
-        let currentInstances = store.get('activeBotInstances');
-        let result = [];
-        let newStore = [];
-        for (var i = 0; i < currentInstances.length; i++) {
-            var currentClient = backend.getClientByUniqueID(currentInstances[i]);
+        const currentInstances = store.get('activeBotInstances');
+        const result = [];
+        const newStore = [];
+        for (let i = 0; i < currentInstances.length; i++) {
+            const currentClient = backend.getClientByUniqueID(currentInstances[i]);
             if (currentClient) {
                 log("getActiveBotInstances: Active Bot " + printObject(currentClient) + " found", 5);
                 newStore.push(currentInstances[i]);
@@ -1199,7 +1199,7 @@ registerPlugin({
         Lib Definition
     */
 
-    var libModule = {
+    const libModule = {
         log: log,
 
         general: {

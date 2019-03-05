@@ -15,20 +15,20 @@ registerPlugin({
 
 }, function (_, config) {
 
-    var event = require('event');
-    var engine = require('engine');
-    var store = require('store');
-    var backend = require('backend');
-    var media = require('media');
-    var audio = require('audio');
-    var format = require('format');
-    var helper = require('helpers');
+    const event = require('event');
+    const engine = require('engine');
+    const store = require('store');
+    const backend = require('backend');
+    const media = require('media');
+    const audio = require('audio');
+    const format = require('format');
+    const helper = require('helpers');
 
     engine.notify('OKlib loaded');
     const backendEngine = engine.getBackend();
 
     const version = '1.1.0';
-    var libLogLevel = 1;
+    let libLogLevel = 1;
     try {
         libLogLevel = config.logLevel;
     } catch (err) {
@@ -154,7 +154,7 @@ registerPlugin({
             channels = arrayCreateArray(channels);
             log("channelGetChannels: Using Channels " + printObject(channels), 5);
         }
-        let result = [];
+        const result = [];
         channels.forEach(channel => {
             if (objectFunctionEqualsElement(channel, attribute, value, compare)) {
                 result.push(channel);
@@ -169,7 +169,7 @@ registerPlugin({
      * @return {Channel}           Default channel on the server. Or undefined if non is found.
      */
     function channelGetDefault() {
-        let defaultChannel = backend.getChannels().find(channel => {
+        const defaultChannel = backend.getChannels().find(channel => {
             return channel.isDefault()
         })
         return defaultChannel
@@ -182,7 +182,7 @@ registerPlugin({
      * @return {Channel[]}               Array of the Subchannels from the given Channel
      */
     function channelGetSubChannels(parentChannel, channels) {
-        let parentChannelID = (isNumber(parentChannel)) ? parentChannel : parentChannel.id();
+        const parentChannelID = isNumber(parentChannel) ? parentChannel : parentChannel.id();
         if (!channels) {
             log("channel.getSubChannels: Using all Channels", 5);
             channels = backend.getChannels();
@@ -190,9 +190,9 @@ registerPlugin({
             channels = arrayCreateArray(channels);
             log("channel.getSubChannels: Using Channels " + printObject(channels), 5);
         }
-        let result = [];
+        const result = [];
         channels.forEach(channel => {
-            let curParentChannel = channel.parent();
+            const curParentChannel = channel.parent();
             if (curParentChannel && equal(curParentChannel.id(), parentChannelID)) {
                 result.push(channel);
                 log("channel.getSubChannels: Found Channel " + printObject(channel), 5);
@@ -215,9 +215,9 @@ registerPlugin({
             }
         }
         let parents = [parentChannel];
-        let channels = [];
+        const channels = [];
         while (parents.length !== 0) {
-            let parent = parents.pop();
+            const parent = parents.pop();
             channels.push(parent);
             parents = parents.concat(channelGetSubChannels(parent));
         }
@@ -318,7 +318,7 @@ registerPlugin({
         if (typeof url !== "string") {
             return undefined;
         }
-        let match = url.match(/\[url=client:\/\/(\d+)\/([\w\d\/\+]{27}=)~?(.*)\](.*)?\[\/url\]/i);
+        const match = url.match(/\[url=client:\/\/(\d+)\/([\w\d\/\+]{27}=)~?(.*)\](.*)?\[\/url\]/i);
         if (!match) {
             return undefined;
         }
@@ -364,7 +364,7 @@ registerPlugin({
             log("clientParseUIDs: Provided no Clients to parse", 3);
             return;
         }
-        let result = [];
+        const result = [];
         clients.forEach(client => {
             result.push(client.uid());
             log("clientsParseUIDs: Resolved UID '" + client.uid() + "'", 5);
@@ -383,9 +383,9 @@ registerPlugin({
             log("clientParseClients: Provided no UIDs to parse", 3);
             return;
         }
-        let result = [];
+        const result = [];
         UIDs.forEach(uid => {
-            let client = backend.getClientByUID(uid);
+            const client = backend.getClientByUID(uid);
             if (client) {
                 result.push(client);
                 log("clientsParseClient: Resolved UID '" + uid + "' to '" + printObject(client) + "'", 5);
@@ -514,7 +514,7 @@ registerPlugin({
             log("clientServerGroupsIsMemberOf: Resolved the servergroup '" + printObject(checkGroup) + "' to the ID '" + checkGroup.id() + "'", 5);
             checkGroup = checkGroup.id();
         }
-        let serverGroups = serverGroupParseIDs(client.getServerGroups());
+        const serverGroups = serverGroupParseIDs(client.getServerGroups());
         return arrayContainsElement(serverGroups, checkGroup);
     }
 
@@ -616,12 +616,12 @@ registerPlugin({
      */
     function serverGroupParseGroups(groupIDs) {
         groupIDs = arrayCreateArray(groupIDs);
-        let result = [];
+        const result = [];
         groupIDs.forEach(groupID => {
             if (!isNumber(groupID)) {
                 result.push(groupID);
             } else {
-                let group = backend.getServerGroupByID(groupID);
+                const group = backend.getServerGroupByID(groupID);
                 if (group) {
                     result.push(group);
                     log("serverGroupParseGroups: Resolved the ID '" + groupID + "' to the servergroup " + printObject(group), 5);
@@ -653,7 +653,7 @@ registerPlugin({
      * @return {Boolean} Returns true if the Sinusbot User has the required Privileges
      */
     function userHasPrivileges(user, privileges) {
-        let userPriv = user.privileges();
+        const userPriv = user.privileges();
         if ((userPriv & privileges) === privileges) {
             return true;
         }
@@ -666,7 +666,7 @@ registerPlugin({
      * @return {Integer}  Returns the Privileges as a numerical value
      */
     function userGetClientPrivileges(client) {
-        let users = engine.getUsers();
+        const users = engine.getUsers();
         let privileges = 0;
         users.forEach(user => {
             if (userIsClientUser(client, user)) {
@@ -683,7 +683,7 @@ registerPlugin({
      * @return {Boolean} Returns true if the Client has the required Privileges
      */
     function userClientHasPrivileges(client, privileges) {
-        let clientPrivileges = userGetClientPrivileges(client);
+        const clientPrivileges = userGetClientPrivileges(client);
         return ((clientPrivileges & privileges) === privileges);
     }
 
@@ -832,7 +832,7 @@ registerPlugin({
     function arrayCombineArrays(array, elements) {
         array = arrayCreateArray(array);
         elements = arrayCreateArray(elements);
-        let result = [];
+        const result = [];
         for (let i = 0; i < array.length; i++) {
             result.push(array[i]);
         }
@@ -885,7 +885,7 @@ registerPlugin({
      */
     function arrayCreateArray(element) {
         if (!Array.isArray(element)) {
-            let array = [];
+            const array = [];
             if (element) {
                 array.push(element);
             }
@@ -902,17 +902,17 @@ registerPlugin({
      * @return {Object[]}  The Set representation of the given Array
      */
     function arrayCreateSet(array, compare) {
-        let result = [];
+        const result = [];
         if (!Array.isArray(array)) {
-            result.push(array);
-            return result;
+            result.push(array)
+            return result
         } else {
-            for (var i = 0; i < array.length; i++) {
+            for (let i = 0; i < array.length; i++) {
                 if (!arrayContainsElement(result, array[i], compare)) {
-                    result.push(array[i]);
+                    result.push(array[i])
                 }
             }
-            return result;
+            return result
         }
     }
 
@@ -924,18 +924,18 @@ registerPlugin({
      * @return {Object[]}    An Array that contains the Elements that were only present in one of the Arrays
      */
     function arrayDifference(array, elements, compare) {
-        let result = [];
+        const result = []
         for (let i = 0; i < elements.length; i++) {
             if (!arrayContainsElement(array, elements[i], compare)) {
-                result.push(elements[i]);
+                result.push(elements[i])
             }
         }
         for (let j = 0; j < array.length; j++) {
             if (!arrayContainsElement(elements, array[j], compare)) {
-                result.push(array[j]);
+                result.push(array[j])
             }
         }
-        return result;
+        return result
     }
 
     /**
@@ -947,14 +947,14 @@ registerPlugin({
      */
     function arrayGetIndex(array, element, compare) {
         if (!compare) {
-            compare = equal;
+            compare = equal
         }
         for (let i = 0; i < array.length; i++) {
             if (compare(array[i], element)) {
-                return i;
+                return i
             }
         }
-        return -1;
+        return -1
     }
 
     /**
@@ -964,14 +964,14 @@ registerPlugin({
      */
     function arrayRemoveUndefined(array) {
         array = arrayCreateArray(array);
-        let result = [];
+        const result = []
         array.forEach(element => {
             if (!empty(element)) {
-                result.push(element);
+                result.push(element)
             }
         })
-        log("arrayRemoveUndefined: Removed '" + (array.length - result.length) + "' undefined or null entries from the array", 4);
-        return result;
+        log("arrayRemoveUndefined: Removed '" + (array.length - result.length) + "' undefined or null entries from the array", 4)
+        return result
     }
 
     /**
@@ -982,15 +982,15 @@ registerPlugin({
      * @return {Object[]}  An Array containing the missing Elements
      */
     function arrayMissingElements(array, elements, compare) {
-        elements = arrayCreateArray(elements);
-        let result = [];
+        elements = arrayCreateArray(elements)
+        const result = []
         elements.forEach(element => {
             if (!arrayContainsElement(array, element, compare)) {
-                result.push(element);
+                result.push(element)
             }
         })
-        log("arrayMissingElements: Found '" + result.length + "' missing entries in the arrays", 4);
-        return result;
+        log("arrayMissingElements: Found '" + result.length + "' missing entries in the arrays", 4)
+        return result
     }
 
     /**
@@ -1002,16 +1002,16 @@ registerPlugin({
      */
     function arrayRemoveElements(array, elements, compare) {
         if (!compare)
-            compare = equal;
-        array = arrayCreateArray(array);
-        elements = arrayCreateArray(elements);
-        let result = [];
+            compare = equal
+        array = arrayCreateArray(array)
+        elements = arrayCreateArray(elements)
+        const result = []
         array.forEach(element => {
             if (!arrayContainsElement(elements, element, compare))
-                result.push(element);
+                result.push(element)
         })
-        log("arrayRemoveElements: Removed '" + (array.length - result.length) + "' elements from the array", 4);
-        return result;
+        log("arrayRemoveElements: Removed '" + (array.length - result.length) + "' elements from the array", 4)
+        return result
     }
 
     /**
@@ -1021,7 +1021,7 @@ registerPlugin({
      * @return {Boolean}   Returns true when a is equal b
      */
     function equal(a, b) {
-        return (a == b);
+        return (a == b)
     }
 
     /**
@@ -1031,7 +1031,7 @@ registerPlugin({
      * @return {Boolean}   Returns true when a is not equal b
      */
     function unequal(a, b) {
-        return (a != b);
+        return (a != b)
     }
 
     /**
@@ -1041,7 +1041,7 @@ registerPlugin({
      * @return {Boolean}   Returns true when a is greater b
      */
     function greater(a, b) {
-        return (a > b);
+        return (a > b)
     }
 
     /**
@@ -1051,7 +1051,7 @@ registerPlugin({
      * @return {Boolean}   Returns true when a is less b
      */
     function less(a, b) {
-        return (a < b);
+        return (a < b)
     }
 
     /**
@@ -1061,7 +1061,7 @@ registerPlugin({
      * @return {Boolean}   Returns true when a is greater or equal b
      */
     function greaterOrEqual(a, b) {
-        return (a >= b);
+        return (a >= b)
     }
 
     /**
@@ -1071,7 +1071,7 @@ registerPlugin({
      * @return {Boolean}   Returns true when a is less or equal b
      */
     function lessOrEqual(a, b) {
-        return (a <= b);
+        return (a <= b)
     }
 
     /**
@@ -1082,8 +1082,8 @@ registerPlugin({
      */
     function contains(a, b) {
         if (a.indexOf(b) !== -1)
-            return true;
-        return false;
+            return true
+        return false
     }
 
     /**
@@ -1094,8 +1094,8 @@ registerPlugin({
      */
     function containsIgnoreCase(a, b) {
         if (a.toLowerCase().indexOf(b.toLowerCase()) !== -1)
-            return true;
-        return false;
+            return true
+        return false
     }
 
     /**
@@ -1104,7 +1104,7 @@ registerPlugin({
      * @return {Boolean}        Returns true if the Object is a Number
      */
     function isNumber(number) {
-        return !isNaN(number);
+        return !isNaN(number)
     }
 
     /**
@@ -1114,12 +1114,12 @@ registerPlugin({
      * @return {String}    Returns a Password with the specified Length
      */
     function generatePassword(length, charset) {
-        let result = "";
+        let result = ""
         if (charset === undefined)
-            charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
         for (let i = 0; i < length; i++)
-            result += charset.charAt(Math.floor(Math.random() * charset.length));
-        return result;
+            result += charset.charAt(Math.floor(Math.random() * charset.length))
+        return result
     }
 
     /**
@@ -1128,7 +1128,7 @@ registerPlugin({
      * @return {Boolean}       Returns true of false
      */
     function isInt(value) {
-        return !isNaN(value) && parseInt(Number(value)) == value && !isNaN(parseInt(value, 10));
+        return !isNaN(value) && parseInt(Number(value)) == value && !isNaN(parseInt(value, 10))
     }
 
     /**
@@ -1140,7 +1140,7 @@ registerPlugin({
      */
     function arrayObjectParseAttribute(array, attribute, isFunction) {
         array = arrayCreateArray(array);
-        let result = [];
+        const result = [];
         array.forEach(element => {
             if (isFunction) {
                 result.push(element[attribute]());
@@ -1162,12 +1162,10 @@ registerPlugin({
         array = arrayCreateArray(array);
         value = arrayCreateArray(array);
         array.forEach(element => element[attribute].apply(null, value))
-            element[attribute].apply(null, value);
-        })
     }
 
     /**
-     * Filters an Array for a specifc Attribute value
+     * Filters an Array for a specific Attribute value
      * @param  {Object[]}  array      The Array to filter
      * @param  {String}  attribute  The Attribute to filter for
      * @param  {Object}  value      Value to check for

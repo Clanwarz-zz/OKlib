@@ -57,6 +57,19 @@ registerPlugin({
         store.set('activeBotInstances', currentInstances);
     });
 
+    event.on('clientMove', function (ev) {
+        if (ev.client.isSelf() && !ev.fromChannel) {
+            let currentInstances = store.get('activeBotInstances');
+            if (!currentInstances) {
+                currentInstances = [];
+            }
+            log("Registering as active Bot " + printObject(backend.getBotClient()), 5);
+            currentInstances.push(backend.getBotClient().uid());
+            currentInstances = arrayCreateSet(currentInstances);
+            store.set('activeBotInstances', currentInstances);
+        }
+    });
+
     event.on('chat', function (ev) {
         if (ev.text === "!help" || ev.text === "!info") {
             ev.client.chat("This bot uses the [url=https://forum.sinusbot.com/resources/oklib.325/]OKlib[/url], which is a library for basic script functions. The full documentation can be found [url=http://server-n2.de/OKlib/external]here[/url]");

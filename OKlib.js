@@ -25,9 +25,9 @@ registerPlugin({
     var helper = require('helpers');
 
     engine.notify('OKlib loaded');
-    var backendEngine = engine.getBackend();
+    const backendEngine = engine.getBackend();
 
-    var version = '1.1.0';
+    const version = '1.1.0';
     var libLogLevel = 1;
     try {
         libLogLevel = config.logLevel;
@@ -177,8 +177,8 @@ registerPlugin({
 
     /**
      * Returns the Subchannels of a given Channel
-     * @param  {Channel} parentChannel The Channel or channelID of the Channel to return the Subchannels of
-     * @param  {Channel[]} [channels]  Optional: The Channel Searchpool. If not provided all Channels will get used
+     * @param  {Channel} parentChannel The Channel or channelID of the Channel to return the subchannels of
+     * @param  {Channel[]} [channels]  Optional: Channel searchpool. If not provided all channels will be used
      * @return {Channel[]}               Array of the Subchannels from the given Channel
      */
     function channelGetSubChannels(parentChannel, channels) {
@@ -524,7 +524,7 @@ registerPlugin({
      * @param  {ServerGroup | ServerGroup[] | Integer | Integer[]} groups Array or single value. Either ServerGroup object or Group IDs
      */
     function clientServerGroupAddToGroups(client, groups) {
-        groups = arrayCreateArray(groups);
+        groups = arrayRemoveUndefined(arrayCreateArray(groups));
         if (groups.length === 0) {
             log("clientServerGroupAddToGroups: Provided no group to add", 3);
             return;
@@ -545,7 +545,7 @@ registerPlugin({
      * @param  {ServerGroup[] | Integer[]} groups The ServerGroups or groupIDs that should be removed from the Client
      */
     function clientServerGroupRemoveFromGroups(client, groups) {
-        groups = arrayCreateArray(groups);
+        groups = arrayRemoveUndefined(arrayCreateArray(groups));
         if (groups.length === 0) {
             log("clientServerGroupAddToGroups: Provided no group to remove", 3);
             return;
@@ -571,9 +571,10 @@ registerPlugin({
      */
     function stringMatchUID(string) {
         if (backendEngine === "ts3") {
-            return string.match(/(^[\w\d\/\+]{27}=$)/g);
+            const pattern = /(^[\w\d\/\+]{27}=$)/g
+            return pattern.test(string);
         }
-        return false;
+        return false
     }
 
     /*
@@ -1160,7 +1161,7 @@ registerPlugin({
     function arrayObjectSetAttribute(array, attribute, value) {
         array = arrayCreateArray(array);
         value = arrayCreateArray(array);
-        array.forEach(element => {
+        array.forEach(element => element[attribute].apply(null, value))
             element[attribute].apply(null, value);
         })
     }

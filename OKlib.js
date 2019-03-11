@@ -776,10 +776,10 @@ function (SinusBot, config) {
         array = arrayCreateArray(array);
         elements = arrayCreateArray(elements);
         let result = [];
-        for (let i in array) {
+        for (let i of array) {
             result.push(array[i]);
         }
-        for (let j in elements) {
+        for (let j of elements) {
             result.push(elements[j]);
         }
         log('arrayCombineArrays: Found ' + result.length + ' Objects', 4);
@@ -795,7 +795,7 @@ function (SinusBot, config) {
      */
     function arrayContainsElement(array, element, compare) {
         if (!compare) compare = equal;
-        for (let i in array) {
+        for (let i of array) {
             if (compare(array[i], element)) return true;
         }
         return false;
@@ -809,7 +809,7 @@ function (SinusBot, config) {
      * @return {Boolean} returns true if at least one element is contained in the given array
      */
     function arrayContainsOne(array, elements, compare) {
-        for (let i in elements) {
+        for (let i of elements) {
             if (arrayContainsElement(array, elements[i], compare)) return true;
         }
         return false;
@@ -842,7 +842,7 @@ function (SinusBot, config) {
             result.push(array);
             return result;
         } else {
-            for (let i in array) {
+            for (let i of array) {
                 if (!arrayContainsElement(result, array[i], compare)) result.push(array[i]);
             }
             return result;
@@ -858,10 +858,10 @@ function (SinusBot, config) {
      */
     function arrayDifference(array, elements, compare) {
         let result = [];
-        for (let i in elements) {
+        for (let i of elements) {
             if (!arrayContainsElement(array, elements[i], compare)) result.push(elements[i]);
         }
-        for (let j in array) {
+        for (let j of array) {
             if (!arrayContainsElement(elements, array[j], compare)) result.push(array[j]);
         }
         return result;
@@ -876,7 +876,7 @@ function (SinusBot, config) {
      */
     function arrayGetIndex(array, element, compare) {
         if (!compare) compare = equal;
-        for (let i in array) {
+        for (let i of array) {
             if (compare(array[i], element)) return i;
         }
         return -1;
@@ -890,7 +890,7 @@ function (SinusBot, config) {
     function arrayRemoveUndefined(array) {
         array = arrayCreateArray(array);
         let result = [];
-        for (let i in array) {
+        for (let i of array) {
             if (!empty(array[i])) result.push(array[i]);
         }
         log('arrayRemoveUndefined: Removed ' + (array.length - result.length) + ' undefined or null entries from the array', 4);
@@ -1026,13 +1026,15 @@ function (SinusBot, config) {
 
     /**
      * simple password generator
-     * @param {number} length password length
+     * @param {number} length password Length
+     * @param {String} charset charset to use for the password generation
      * @return {String} returns a password with the specified length
      */
-    function generatePassword(length) {
+    function generatePassword(length, charset) {
         let result = '';
-        let charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        for (var i = 0; i < length; i++)
+        if (charset === undefined)
+            charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        for (let i = 0; i < length; i++)
             result += charset.charAt(Math.floor(Math.random() * charset.length));
         return result;
     }
@@ -1120,7 +1122,7 @@ function (SinusBot, config) {
         Lib Definition
     */
 
-    var libModule = {
+    const libModule = {
         log: log,
 
         general: {
@@ -1134,6 +1136,7 @@ function (SinusBot, config) {
             toString: channelToString,
             getDefault: channelGetDefault,
             getChannels: channelGetChannels,
+            getSubchannels: channelGetSubChannels, //legacy
             getSubChannels: channelGetSubChannels,
             getAllSubChannels: channelGetAllSubChannels,
             isSubChannelOf: channelIsSubChannelOf,

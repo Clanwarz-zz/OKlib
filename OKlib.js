@@ -159,7 +159,7 @@ function (SinusBot, config) {
      * @return {Channel[]} array of all subchannels from the given channel
      */
     function channelGetSubChannels(parentChannel, channels) {
-        let parentChannelID = (isNumber(parentChannel)) ? parentChannel : parentChannel.id();
+        const parentChannelID = isNumber(parentChannel) ? parentChannel : parentChannel.id();
         if (!channels) {
             channels = backend.getChannels();
             log('channel.getSubChannels: Using all Channels', 5);
@@ -192,9 +192,9 @@ function (SinusBot, config) {
             }
         }
         let parents = [parentChannel];
-        let channels = [];
+        const channels = [];
         while (parents.length !== 0) {
-            let parent = parents.pop();
+            const parent = parents.pop();
             channels.push(parent);
             parents = parents.concat(channelGetSubChannels(parent, undefined));
         }
@@ -630,7 +630,7 @@ function (SinusBot, config) {
      * @return {Integer} returns the privileges as a numerical value
      */
     function userGetClientPrivileges(client) {
-        let users = engine.getUsers();
+        const users = engine.getUsers();
         let privileges = 0;
         users.forEach(e => {
             if (userIsClientUser(client, e)) privileges = privileges | e.privileges();
@@ -645,7 +645,7 @@ function (SinusBot, config) {
      * @return {Boolean} returns true if the client has the required privileges
      */
     function userClientHasPrivileges(client, privileges) {
-        let clientPrivileges = userGetClientPrivileges(client);
+        const clientPrivileges = userGetClientPrivileges(client);
         return ((clientPrivileges & privileges) === privileges);
     }
 
@@ -850,15 +850,15 @@ function (SinusBot, config) {
      * @return {Object[]} the set representation of the given array
      */
     function arrayCreateSet(array, compare) {
-        let result = [];
+        const result = [];
         if (!Array.isArray(array)) {
-            result.push(array);
-            return result;
+            result.push(array)
+            return result
         } else {
             for (let e of array) {
                 if (!arrayContainsElement(result, e, compare)) result.push(e);
             }
-            return result;
+            return result
         }
     }
 
@@ -877,7 +877,7 @@ function (SinusBot, config) {
         for (let e of array) {
             if (!arrayContainsElement(elements, e, compare)) result.push(e);
         }
-        return result;
+        return result
     }
 
     /**
@@ -887,12 +887,12 @@ function (SinusBot, config) {
      * @param {Function} compare a compare function that should be used for the comparison | if not set, 'equal' is used
      * @return {Integer} [description]
      */
-    function arrayGetIndex(array, element, compare) {
+    function arrayGetIndex(array, element, compare) { 
         if (!compare) compare = equal;
         for (let i = 0; i <= array.length; i++) {
             if (compare(array[i], element)) return i;
         }
-        return -1;
+        return -1
     }
 
     /**
@@ -902,10 +902,12 @@ function (SinusBot, config) {
      */
     function arrayRemoveUndefined(array) {
         array = arrayCreateArray(array);
-        let result = [];
-        for (let i of array) {
-            if (!empty(array[i])) result.push(array[i]);
-        }
+        const result = []
+        array.forEach(element => {
+            if (!empty(element)) {
+                result.push(element)
+            }
+        })
         log('arrayRemoveUndefined: Removed ' + (array.length - result.length) + ' undefined or null entries from the array', 4);
         return result;
     }
@@ -953,7 +955,7 @@ function (SinusBot, config) {
      * @return {Boolean} returns true when a is equal b
      */
     function equal(a, b) {
-        return (a == b);
+        return (a == b)
     }
 
     /**
@@ -963,7 +965,7 @@ function (SinusBot, config) {
      * @return {Boolean} returns true when a is not equal b
      */
     function unequal(a, b) {
-        return (a != b);
+        return (a != b)
     }
 
     /**
@@ -973,7 +975,7 @@ function (SinusBot, config) {
      * @return {Boolean} returns true when a is greater b
      */
     function greater(a, b) {
-        return (a > b);
+        return (a > b)
     }
 
     /**
@@ -983,7 +985,7 @@ function (SinusBot, config) {
      * @return {Boolean} returns true when a is less b
      */
     function less(a, b) {
-        return (a < b);
+        return (a < b)
     }
 
     /**
@@ -993,7 +995,7 @@ function (SinusBot, config) {
      * @return {Boolean} returns true when a is greater or equal b
      */
     function greaterOrEqual(a, b) {
-        return (a >= b);
+        return (a >= b)
     }
 
     /**
@@ -1003,7 +1005,7 @@ function (SinusBot, config) {
      * @return {Boolean} returns true when a is less or equal b
      */
     function lessOrEqual(a, b) {
-        return (a <= b);
+        return (a <= b)
     }
 
     /**
@@ -1034,7 +1036,7 @@ function (SinusBot, config) {
      * @return {Boolean} returns true if the object is a number
      */
     function isNumber(number) {
-        return !isNaN(number);
+        return !isNaN(number)
     }
 
     /**
@@ -1048,8 +1050,8 @@ function (SinusBot, config) {
         if (charset === undefined)
             charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         for (let i = 0; i < length; i++)
-            result += charset.charAt(Math.floor(Math.random() * charset.length));
-        return result;
+            result += charset.charAt(Math.floor(Math.random() * charset.length))
+        return result
     }
 
     /**

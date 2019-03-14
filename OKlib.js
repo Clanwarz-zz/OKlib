@@ -44,6 +44,19 @@ function (SinusBot, config) {
         currentInstances = arrayCreateSet(currentInstances, undefined);
         store.set('activeBotInstances', currentInstances);
     });
+    
+    event.on('clientMove', function (ev) {
+        if (ev.client.isSelf() && !ev.fromChannel) {
+            let currentInstances = store.get('activeBotInstances');
+            if (!currentInstances) {
+                currentInstances = [];
+            }
+            log("Registering as active Bot " + printObject(backend.getBotClient()), 5);
+            currentInstances.push(backend.getBotClient().uid());
+            currentInstances = arrayCreateSet(currentInstances);
+            store.set('activeBotInstances', currentInstances);
+        }
+    });
 
     event.on('chat', ev => {
         if (ev.text === '!help' || ev.text === '!info')
@@ -300,7 +313,7 @@ function (SinusBot, config) {
     }
 
     /**
-     * filters a alient array by another client array
+     * filters a client array by another client array
      * @param {Client[]} clients the clients
      * @param {Client[]} array the clients to filter out
      * @return {Client[]} the new clients
@@ -776,11 +789,11 @@ function (SinusBot, config) {
         array = arrayCreateArray(array);
         elements = arrayCreateArray(elements);
         let result = [];
-        for (let i of array) {
-            result.push(array[i]);
+        for (let e of array) {
+            result.push(e);
         }
-        for (let j of elements) {
-            result.push(elements[j]);
+        for (let e of elements) {
+            result.push(e);
         }
         log('arrayCombineArrays: Found ' + result.length + ' Objects', 4);
         return result;
@@ -795,8 +808,8 @@ function (SinusBot, config) {
      */
     function arrayContainsElement(array, element, compare) {
         if (!compare) compare = equal;
-        for (let i of array) {
-            if (compare(array[i], element)) return true;
+        for (let e of array) {
+            if (compare(e, element)) return true;
         }
         return false;
     }
@@ -809,8 +822,8 @@ function (SinusBot, config) {
      * @return {Boolean} returns true if at least one element is contained in the given array
      */
     function arrayContainsOne(array, elements, compare) {
-        for (let i of elements) {
-            if (arrayContainsElement(array, elements[i], compare)) return true;
+        for (let e of elements) {
+            if (arrayContainsElement(array, e, compare)) return true;
         }
         return false;
     }
@@ -842,8 +855,8 @@ function (SinusBot, config) {
             result.push(array);
             return result;
         } else {
-            for (let i of array) {
-                if (!arrayContainsElement(result, array[i], compare)) result.push(array[i]);
+            for (let e of array) {
+                if (!arrayContainsElement(result, e, compare)) result.push(e);
             }
             return result;
         }
@@ -858,11 +871,11 @@ function (SinusBot, config) {
      */
     function arrayDifference(array, elements, compare) {
         let result = [];
-        for (let i of elements) {
-            if (!arrayContainsElement(array, elements[i], compare)) result.push(elements[i]);
+        for (let e of elements) {
+            if (!arrayContainsElement(array, e, compare)) result.push(e);
         }
-        for (let j of array) {
-            if (!arrayContainsElement(elements, array[j], compare)) result.push(array[j]);
+        for (let e of array) {
+            if (!arrayContainsElement(elements, e, compare)) result.push(e);
         }
         return result;
     }
@@ -876,7 +889,7 @@ function (SinusBot, config) {
      */
     function arrayGetIndex(array, element, compare) {
         if (!compare) compare = equal;
-        for (let i of array) {
+        for (let i = 0; i <= array.length; i++) {
             if (compare(array[i], element)) return i;
         }
         return -1;
